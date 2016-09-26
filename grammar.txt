@@ -1,0 +1,39 @@
+PROGRAM ::= VAR_DECLAR* FUNCTION* MAIN
+VAR_DECLAR ::= (VARS | ('array' ARRAYS)) ';'
+VARS ::= TYPE ID '=' EXPRESSION MORE_VAR
+MORE_VAR ::= (',' ID '=' EXPRESSION)*
+TYPE ::= ('int' | 'float' | 'bool' | 'string')
+ARRAYS ::= TYPE ID '[' CONSTANT ']' '=' '{' EXPRESSION MORE_EXP '}' MORE_ARRAY
+MORE_EXP ::= (',' EXPRESSION)*
+MORE_ARRAY ::= (',' ID '[' CONSTANT ']' '=' '[' EXPRESSION MORE_EXP ']')*
+FUNCTION ::= 'function' FUNC_TYPE ID '(' PAR ')' '{' BLOCK 'return' RETURN_TYPE ';' '}'
+FUNC_TYPE ::= (TYPE | 'void')
+RETURN_TYPE ::= (EXPRESSION | 'void')
+MAIN ::= 'function' 'main' '(' PAR ')' '{' BLOCK '}'
+PAR ::= (TYPE ID MORE_PAR)?
+MORE_PAR ::= (',' TYPE ID)*
+FUNC_CALL ::= ID '(' PAR_IN ')'
+PAR_IN ::= (EXPRESSION MORE_PAR_IN)?
+MORE_PAR_IN ::= (',' EXPRESSION)*
+BLOCK ::= (VAR_DECLAR | ASSIGN | CONDITIONAL | LOOP | FUNC_CALL | OUTPUT )*
+LOOP_BLOCK ::= ( ASSIGN | CONDITIONAL | LOOP | FUNC_CALL | OUTPUT | INPUT)*
+ASSIGN ::= ID ('[' EXP ']')? '=' (EXPRESSION | INPUT) ';'
+CONDITIONAL ::= 'if' '(' EXPRESSION ')' '{' BLOCK '}' ('elif' '(' EXPRESSION ')' '{' BLOCK '}')* ('else' '{' BLOCK '}')?
+OUTPUT ::= 'console' '(' EXPRESSION ')' ';'
+LOOP ::= FOR | WHILE | DO_WHILE
+FOR ::= 'for' '(' EXPRESSION ';' ASSIGN ')' '{' LOOP_BLOCK '}'
+WHILE ::= 'while' '(' EXPRESSION ')' '{' LOOP_BLOCK '}'
+DO_WHILE ::= 'do' '{' LOOP_BLOCK '}' 'while' '(' EXPRESSION ')' ';'
+EXPRESSION ::= HIGHER_EXP (('||' | '&&') HIGHER_EXP)?
+HIGHER_EXP ::= EXP (('<' | '>' | '<=' | '>=' | '!=' | '==') EXP)?
+EXP ::= TERM (('+' | '-') TERM)*
+TERM ::= FACTOR (('*' | '/' | '%') FACTOR)*
+FACTOR ::= ('(' EXPRESSION ')' | DATA)
+DATA ::= (ID (('[' EXPRESSION ']') | '(' PAR_IN ')')? | CONSTANT)
+CONSTANT ::= (INT | FLOAT | BOOL | STRING)
+ID ::= [a-zA-Z][a-zA-Z_0-9]*
+INT ::= ('+' | '-')? [0-9]+
+FLOAT ::= ('+' | '-')? [0-9]+(('.'[0-9]+)?'f'
+BOOL ::= ('true' | 'false')
+STRING ::= '"' .* '"'
+INPUT ::= 'input' '(' STRING? ')' ';'
