@@ -11,8 +11,7 @@ tokens = RiperLex.tokens
 # define grammar rules
 def p_program(p):
   '''program : initVarDeclar functionDeclar main'''
-  p[0] = 'OK'
-  
+  p[0] = 'OK'  
 
 def p_initVarDeclar(p):
   '''initVarDeclar : varDeclar initVarDeclar
@@ -70,7 +69,7 @@ def p_returnType(p):
   
 
 def p_main(p):
-  '''main : FUNCTION MAIN '(' par ')' '{' block '}' '''
+  '''main : MAIN '(' par ')' '{' block '}' '''
   
 
 def p_par(p):
@@ -229,7 +228,8 @@ def p_factor(p):
 
 def p_data(p):
   '''data : ID possibleIdCall
-    | constant'''
+    | constant
+    | input '''
   
 
 def p_possibleIdCall(p):
@@ -249,8 +249,11 @@ def p_bool(p):
           | FALSE'''
 
 def p_input(p):
-  '''input : INPUT '(' STRING ')' ';' '''
+  '''input : INPUT '(' inputPar ')' '''
   
+def p_inputPar(p):
+  '''inputPar : STRING 
+                 |  '''
 
 def p_error(p):
       print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
@@ -264,7 +267,7 @@ if __name__ == '__main__':
             f = open(file,'r')
             data = f.read()
             f.close()
-            if (RiperParser.parse(data, tracking=True) == 'OK'):
+            if (RiperParser.parse(data, debug = True, tracking=True)):
                 print ('This is a correct and complete Riper program');
         except EOFError:
             print(EOFError)
