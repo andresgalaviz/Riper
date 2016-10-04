@@ -101,7 +101,7 @@ def p_block(p):
             | assign block
             | conditional block
             | loop block
-            | funcCall block
+            | funcCall ';' block
             | output block
             | input block
             | '''
@@ -111,7 +111,7 @@ def p_loopBlock(p):
   '''loopBlock : assign loopBlock
     | conditional loopBlock
     | loop loopBlock
-    | funcCall loopBlock
+    | funcCall ';' loopBlock
     | output loopBlock
     | input loopBlock
     | '''
@@ -135,7 +135,8 @@ def p_possibleElif(p):
   
 
 def p_possibleElse(p):
-  '''possibleElse : ELSE '{' block '}' '''
+  '''possibleElse : ELSE '{' block '}' 
+    | '''
   
 
 def p_output(p):
@@ -149,7 +150,7 @@ def p_loop(p):
   
 
 def p_for(p):
-  '''for : FOR '(' expression ')' '{' loopBlock '}' '''
+  '''for : FOR '('  assign expression ')' '{' loopBlock '}' '''
   
 
 def p_while(p):
@@ -157,7 +158,7 @@ def p_while(p):
   
 
 def p_doWhile(p):
-  '''doWhile : DO '{' loopBlock '}' while '(' expression ')' ';' '''
+  '''doWhile : DO '{' loopBlock '}' WHILE '(' expression ')' ';' '''
   
 
 def p_expression(p):
@@ -267,7 +268,7 @@ if __name__ == '__main__':
             f = open(file,'r')
             data = f.read()
             f.close()
-            if (RiperParser.parse(data, debug = True, tracking=True)):
+            if (RiperParser.parse(data, debug = False, tracking=True)):
                 print ('This is a correct and complete Riper program');
         except EOFError:
             print(EOFError)

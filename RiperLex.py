@@ -40,7 +40,7 @@ tokens = ['ID',
 literals = ['=', '+', '-', '*', '/', '{', '}', '(', ')', '[', ']', ':', ',', ';', '%']
 
 # Rules for tokens
-t_ignore = ' \t\n'
+t_ignore = ' \t'
 t_EQUALTO = r'=='
 t_LESS = r'<'
 t_GREATER = r'>'
