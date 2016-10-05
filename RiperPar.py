@@ -98,7 +98,7 @@ def p_moreParIn(p):
 
 def p_block(p):
   '''block : varDeclar block
-            | assign block
+            | assign ';' block
             | conditional block
             | loop block
             | funcCall ';' block
@@ -108,7 +108,7 @@ def p_block(p):
   
 
 def p_loopBlock(p):
-  '''loopBlock : assign loopBlock
+  '''loopBlock : assign ';' loopBlock
     | conditional loopBlock
     | loop loopBlock
     | funcCall ';' loopBlock
@@ -118,7 +118,7 @@ def p_loopBlock(p):
   
 
 def p_assign(p):
-  '''assign : ID possibleArray '=' expression ';' '''
+  '''assign : ID possibleArray '=' expression '''
 
 def p_possibleArray(p):
   '''possibleArray : '[' exp ']'
@@ -150,7 +150,7 @@ def p_loop(p):
   
 
 def p_for(p):
-  '''for : FOR '('  assign expression ')' '{' loopBlock '}' '''
+  '''for : FOR '('  expression ';' assign ')' '{' loopBlock '}' '''
   
 
 def p_while(p):

@@ -30,7 +30,7 @@ function string fibPar(string num, string num2) {
 
 function bool isTrue(bool val) {
     int i = 0;
-    for(i = i + 2; i < 10) {
+    for(i < 10; i = i + 2) {
         if(true) {
             console(i);
         }
@@ -50,10 +50,10 @@ function bool isTrue(bool val) {
 
 main(int args, string nums) {
     int i = 0, j = 0;
-    for(i = i + 2; i < 10) {
+    for(i < 10; i = i + 2) {
         console(i);
         plusOne(10);
-        for(j = j + 1; j < 10) {
+        for(j < 10; j = j + 1) {
             console(j);
             plusOne(10);
             while((i > 0) && isTrue(true)) {
