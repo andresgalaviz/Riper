@@ -1,3 +1,14 @@
-main() {
+global {
+  int var10 = 10, varInt12 = 12, var15 = 15;
+}
 
+function int plusOne(int num) {
+    string word = "hola";
+    return num + 1;
+}
+
+
+main() {
+  int x = 4, y = 3;
+  bool b = true;
 }

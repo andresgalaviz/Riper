@@ -8,10 +8,26 @@ import RiperLex
 # import the lexical tokens
 tokens = RiperLex.tokens
 
+directory = {'global':{}}
+global currentTable
+currentTable = {}
+global varValues
+varValues = []
+
+
 # define grammar rules
 def p_program(p):
-  '''program : initVarDeclar functionDeclar main'''
+  '''program : globalVarDeclar functionDeclar main'''
   p[0] = 'OK'  
+
+def p_globalVarDeclar(p):
+  '''globalVarDeclar : GLOBAL '{' initVarDeclar '}' '''
+  if (len(p) > 1):
+    global currentTable
+    if (len(currentTable) > 0):
+      directory['global'] = currentTable
+      currentTable = {}
+
 
 def p_initVarDeclar(p):
   '''initVarDeclar : varDeclar initVarDeclar
@@ -27,10 +43,18 @@ def p_varDeclar(p):
 
 def p_vars(p):
   '''vars : type ID '=' expression moreVar'''
+  if (len(p) > 1):
+    global currentTable
+    currentTable[p[2]] = [currentType, varValues.pop(-1)]
+
+
 
 def p_moreVar(p):
   '''moreVar : ',' ID '=' expression moreVar
     | '''
+  if (len(p) > 1):
+    global currentTable
+    currentTable[p[2]] = [currentType, varValues.pop(-1)]
   
 
 def p_type(p):
@@ -38,8 +62,10 @@ def p_type(p):
     | FLOATTYPE
     | STRINGTYPE
     | BOOLTYPE '''
-  
+  global currentType
+  currentType = p[1]
 
+  
 def p_arrays(p):
   '''arrays : type ID '[' constant ']' '=' '{' expression moreExp '}' moreArray '''
   
@@ -56,6 +82,11 @@ def p_moreArray(p):
 
 def p_function(p):
   '''function : FUNCTION funcType ID '(' par ')' '{' block RETURN returnType ';' '}' '''
+  if (len(p) > 1):
+    global currentTable
+    if (len(currentTable) > 0):
+      directory[p[3]] = currentTable
+      currentTable = {}
   
 
 def p_funcType(p):
@@ -70,6 +101,11 @@ def p_returnType(p):
 
 def p_main(p):
   '''main : MAIN '(' par ')' '{' block '}' '''
+  if (len(p) > 1):
+    global currentTable
+    if (len(currentTable) > 0):
+      directory['main'] = currentTable
+      currentTable = {}
   
 
 def p_par(p):
@@ -242,12 +278,12 @@ def p_possibleIdCall(p):
 def p_constant(p):
   '''constant : INT
     | FLOAT
-    | bool
+    | TRUE
+    | FALSE
     | STRING'''
+  if (len(p) > 1):
+    varValues.append(p[1])
 
-def p_bool(p):
-  '''bool : TRUE 
-          | FALSE'''
 
 def p_input(p):
   '''input : INPUT '(' inputPar ')' '''
@@ -270,6 +306,7 @@ if __name__ == '__main__':
             f.close()
             if (RiperParser.parse(data, debug = False, tracking=True)):
                 print ('This is a correct and complete Riper program');
+                print directory
         except EOFError:
             print(EOFError)
     else:

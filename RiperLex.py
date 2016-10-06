@@ -20,7 +20,8 @@ reserved = {
     'do' : 'DO',
     'return' : 'RETURN',
     'true' : 'TRUE',
-    'false' : 'FALSE'
+    'false' : 'FALSE',
+    'global' : 'GLOBAL'
 }
 
 # List of tokens
