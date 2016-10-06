@@ -1,14 +1,18 @@
-global {
-  int var10 = 10, varInt12 = 12, var15 = 15;
-}
+int var10 = 10, varInt12 = 12, var15 = 15;
 
 function int plusOne(int num) {
     string word = "hola";
-    return num + 1;
+    word = "another word";
+    z = aba;
+    int new = var10;
+    return num + num2 + 1;
 }
 
 
 main() {
+  var10 = varInt12 + var15;
+  varNotDeclared = 30;
+  int new = anotherVarNotDeclared;
   int x = 4, y = 3;
   bool b = true;
 }

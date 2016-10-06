@@ -21,7 +21,7 @@ def p_program(p):
   p[0] = 'OK'  
 
 def p_globalVarDeclar(p):
-  '''globalVarDeclar : GLOBAL '{' initVarDeclar '}' '''
+  '''globalVarDeclar : initVarDeclar '''
   if (len(p) > 1):
     global currentTable
     if (len(currentTable) > 0):
@@ -84,14 +84,20 @@ def p_function(p):
   '''function : FUNCTION funcType ID '(' par ')' '{' block RETURN returnType ';' '}' '''
   if (len(p) > 1):
     global currentTable
-    if (len(currentTable) > 0):
-      directory[p[3]] = currentTable
-      currentTable = {}
+    global currentFuncType
+    directory[p[3]] = [currentFuncType]
+    currentTable = {}
   
 
 def p_funcType(p):
-  '''funcType : type
+  '''funcType : INTTYPE
+    | FLOATTYPE
+    | STRINGTYPE
+    | BOOLTYPE
     | VOID '''
+  if (len(p) > 1):
+    global currentFuncType
+    currentFuncType = p[1]
   
 
 def p_returnType(p):
@@ -111,11 +117,17 @@ def p_main(p):
 def p_par(p):
   '''par : type ID morePar
          | '''
+  if (len(p) > 1):
+    global currentTable
+    currentTable[p[2]] = [currentType]
   
 
 def p_morePar(p):
   '''morePar : ',' type ID morePar
     | '''
+  if (len(p) > 1):
+    global currentTable
+    currentTable[p[2]] = [currentType]
   
 
 def p_funcCall(p):
@@ -155,6 +167,11 @@ def p_loopBlock(p):
 
 def p_assign(p):
   '''assign : ID possibleArray '=' expression '''
+  global currentTable
+  global directory
+  if (p[1] not in currentTable):
+    if (p[1] not in directory['global']):
+      print "ERROR, variable ", p[1], " has not been declared"
 
 def p_possibleArray(p):
   '''possibleArray : '[' exp ']'
@@ -267,6 +284,12 @@ def p_data(p):
   '''data : ID possibleIdCall
     | constant
     | input '''
+  if (len(p) == 3):
+    global currentTable
+    global directory
+    if (p[1] not in currentTable):
+      if (p[1] not in directory['global']):
+        print "ERROR, variable ", p[1], " has not been declared"
   
 
 def p_possibleIdCall(p):
