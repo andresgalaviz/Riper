@@ -1,11 +1,16 @@
 int var10 = 10, varInt12 = 12, var15 = 15;
 
+function int aba() {
+  return 6;
+}
+
 function int plusOne(int num) {
     string word = "hola";
     word = "another word";
-    z = aba;
+    int z = aba();
+    
     int new = var10;
-    return num + num2 + 1;
+    return num + numNotDeclared + 1;
 }
 
 

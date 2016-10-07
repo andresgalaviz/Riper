@@ -8,12 +8,15 @@ import RiperLex
 # import the lexical tokens
 tokens = RiperLex.tokens
 
-directory = {'global':{}}
+directory = {}
 global currentTable
 currentTable = {}
 global varValues
 varValues = []
-
+global expQueue
+expQueue = []
+global correctProgram
+correctProgram = True
 
 # define grammar rules
 def p_program(p):
@@ -24,8 +27,9 @@ def p_globalVarDeclar(p):
   '''globalVarDeclar : initVarDeclar '''
   if (len(p) > 1):
     global currentTable
+    global directory
     if (len(currentTable) > 0):
-      directory['global'] = currentTable
+      directory = currentTable.copy()
       currentTable = {}
 
 
@@ -85,8 +89,10 @@ def p_function(p):
   if (len(p) > 1):
     global currentTable
     global currentFuncType
+    global varValues
     directory[p[3]] = [currentFuncType]
     currentTable = {}
+    del varValues[:]
   
 
 def p_funcType(p):
@@ -167,11 +173,14 @@ def p_loopBlock(p):
 
 def p_assign(p):
   '''assign : ID possibleArray '=' expression '''
-  global currentTable
-  global directory
-  if (p[1] not in currentTable):
-    if (p[1] not in directory['global']):
-      print "ERROR, variable ", p[1], " has not been declared"
+  if (len(p) > 1):
+    global currentTable
+    global directory
+    if (p[1] not in currentTable):
+      if (p[1] not in directory):
+        print "ERROR, variable ", p[1], " has not been declared"
+        global correctProgram
+        correctProgram = False
 
 def p_possibleArray(p):
   '''possibleArray : '[' exp ']'
@@ -216,6 +225,8 @@ def p_doWhile(p):
 
 def p_expression(p):
   '''expression : higherExp possibleHigherExp'''
+  if (len(p) > 1):
+    del expQueue[:]
   
 
 def p_possibleHigherExp(p):
@@ -226,6 +237,8 @@ def p_possibleHigherExp(p):
 def p_possibleHigherExpOp(p):
   '''possibleHigherExpOp : AND
     | OR '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
   
 
 def p_higherExp(p):
@@ -244,6 +257,8 @@ def p_possibleExpOp(p):
     | GREATEREQUAL
     | DIFFERENT
     | EQUALTO '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
   
 
 def p_exp(p):
@@ -258,6 +273,8 @@ def p_possibleTerms(p):
 def p_possibleTermOp(p):
   '''possibleTermOp : '+'
   | '-' '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
   
 
 def p_term(p):
@@ -273,6 +290,9 @@ def p_possibleFactorOp(p):
   '''possibleFactorOp : '*'
     | '/'
     | '%' '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
+
   
 
 def p_factor(p):
@@ -288,8 +308,14 @@ def p_data(p):
     global currentTable
     global directory
     if (p[1] not in currentTable):
-      if (p[1] not in directory['global']):
+      if (p[1] not in directory):
         print "ERROR, variable ", p[1], " has not been declared"
+        global correctProgram
+        correctProgram = False
+      else:
+        varValues.append(p[1])
+    else:
+      varValues.append(p[1])
   
 
 def p_possibleIdCall(p):
@@ -306,6 +332,7 @@ def p_constant(p):
     | STRING'''
   if (len(p) > 1):
     varValues.append(p[1])
+    expQueue.append(p[1])
 
 
 def p_input(p):
@@ -328,6 +355,7 @@ if __name__ == '__main__':
             data = f.read()
             f.close()
             if (RiperParser.parse(data, debug = False, tracking=True)):
+              if(correctProgram):
                 print ('This is a correct and complete Riper program');
                 print directory
         except EOFError:
