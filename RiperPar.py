@@ -49,7 +49,13 @@ def p_vars(p):
   '''vars : type ID '=' expression moreVar'''
   if (len(p) > 1):
     global currentTable
-    currentTable[p[2]] = [currentType, varValues.pop(-1)]
+    if (p[2] in currentTable or p[2] in directory):
+      print "ERROR, variable ", p[2], " has already been declared"
+      global correctProgram
+      correctProgram = False
+    else:
+      currentTable[p[2]] = [currentType, varValues.pop(-1)]
+      #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
 
 
 
@@ -58,7 +64,13 @@ def p_moreVar(p):
     | '''
   if (len(p) > 1):
     global currentTable
-    currentTable[p[2]] = [currentType, varValues.pop(-1)]
+    if (p[2] in currentTable or p[2] in directory):
+      print "ERROR, variable ", p[2], " has already been declared"
+      global correctProgram
+      correctProgram = False
+    else:
+      currentTable[p[2]] = [currentType, varValues.pop(-1)]
+      #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
   
 
 def p_type(p):
@@ -66,13 +78,22 @@ def p_type(p):
     | FLOATTYPE
     | STRINGTYPE
     | BOOLTYPE '''
-  global currentType
-  currentType = p[1]
+  if (len(p) > 1):
+    global currentType
+    currentType = p[1]
 
   
 def p_arrays(p):
-  '''arrays : type ID '[' constant ']' '=' '{' expression moreExp '}' moreArray '''
-  
+  '''arrays : firstArr moreArray '''
+
+def p_firstArr(p):
+  '''firstArr : type ID '[' INT ']' '=' '{' expression moreExp '}' '''
+  if (len(p) > 1):
+    if (int(p[4]) != len(varValues)):
+      #print "ERROR, the size of array ", p[2], " is different from the amount of contents"
+      global correctProgram
+      #correctProgram = False
+    del varValues[:]
 
 def p_moreExp(p):
   '''moreExp : ',' expression moreExp
@@ -80,8 +101,14 @@ def p_moreExp(p):
   
 
 def p_moreArray(p):
-  '''moreArray : ',' ID '[' constant ']' '=' '{' expression moreExp '}' moreArray
+  '''moreArray : ',' ID '[' INT ']' '=' '{' expression moreExp '}' moreArray
     | '''
+  if (len(p) > 1):
+    if (int(p[4]) != len(varValues)):
+      #print "ERROR, the size of array ", p[2], " is different from the amount of contents"
+      global correctProgram
+      #correctProgram = False
+    del varValues[:]
   
 
 def p_function(p):

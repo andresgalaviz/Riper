@@ -1,10 +1,16 @@
 int var10 = 10, varInt12 = 12, var15 = 15;
-
-function int aba() {
+int numNotDeclared = 10, anotherVarNotDeclared = 20, varNotDeclared = 30;
+array float varArr1[2] = {10.6, 2};
+array float varArr2[2] = {10.6, 2};
+array int varArr1[2] = {10, 2}, varInt2[1] = {false};
+array int varArr1[2] = {10, 2}, varIntArr2[1] = {12};
+array bool var5[2] = {true, false}, varInt2[1] = {false};
+function void aba() {
   return 6;
 }
 
 function int plusOne(int num) {
+    int var11 = 20;
     string word = "hola";
     word = "another word";
     int z = aba();
