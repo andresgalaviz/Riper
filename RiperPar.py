@@ -4,6 +4,7 @@
 
 import ply.yacc as yacc
 import sys
+from collections import defaultdict
 import RiperLex
 # import the lexical tokens
 tokens = RiperLex.tokens
@@ -90,9 +91,9 @@ def p_firstArr(p):
   '''firstArr : type ID '[' INT ']' '=' '{' expression moreExp '}' '''
   if (len(p) > 1):
     if (int(p[4]) != len(varValues)):
-      #print "ERROR, the size of array ", p[2], " is different from the amount of contents"
+      print "ERROR, the size of array ", p[2], " is different from the amount of contents"
       global correctProgram
-      #correctProgram = False
+      correctProgram = False
     del varValues[:]
 
 def p_moreExp(p):
@@ -105,9 +106,9 @@ def p_moreArray(p):
     | '''
   if (len(p) > 1):
     if (int(p[4]) != len(varValues)):
-      #print "ERROR, the size of array ", p[2], " is different from the amount of contents"
+      print "ERROR, the size of array ", p[2], " is different from the amount of contents"
       global correctProgram
-      #correctProgram = False
+      correctProgram = False
     del varValues[:]
   
 
@@ -323,8 +324,19 @@ def p_possibleFactorOp(p):
   
 
 def p_factor(p):
-  '''factor : '(' expression ')'
+  '''factor : lPar expression rPar
     | data'''
+
+def p_lPar(p):
+  '''lPar : '(' '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
+
+def p_rPar(p):
+  '''rPar : ')' '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
+
   
 
 def p_data(p):
