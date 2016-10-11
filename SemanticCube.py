@@ -11,13 +11,14 @@ from collections import defaultdict
 
 
 semanticCube = {}
+# Return -1 if not possible
 semanticCube = defaultdict(lambda: -1, semanticCube)
 
 # int _ int = _
 # float _ float = _
 # int _ float = _
 # float _ int = _
-for i in range(0,3):
+for i in range(0,4):
     semanticCube[0,i,0] = 0
     semanticCube[1,i,1] = 1
     semanticCube[0,i,1] = 1
