@@ -10,6 +10,7 @@ from collections import defaultdict
 # %         = 4
 
 
+
 semanticCube = {}
 # Return -1 if not possible
 semanticCube = defaultdict(lambda: -1, semanticCube)
