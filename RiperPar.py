@@ -4,8 +4,8 @@
 
 import ply.yacc as yacc
 import sys
-from collections import defaultdict
 import RiperLex
+import SemanticCube
 # import the lexical tokens
 tokens = RiperLex.tokens
 
@@ -18,6 +18,14 @@ global expQueue
 expQueue = []
 global correctProgram
 correctProgram = True
+
+precedence = (
+    ('left','+','-'),
+    ('left','*','/', '%'),
+    ('right','UMINUS'),
+    )
+
+
 
 # define grammar rules
 def p_program(p):
@@ -267,11 +275,10 @@ def p_possibleHigherExpOp(p):
     | OR '''
   if (len(p) > 1):
     expQueue.append(p[1])
-  
 
 def p_higherExp(p):
   '''higherExp : exp possibleExp'''
-  
+  print(p[1])
 
 def p_possibleExp(p):
   '''possibleExp : possibleExpOp exp
@@ -287,60 +294,37 @@ def p_possibleExpOp(p):
     | EQUALTO '''
   if (len(p) > 1):
     expQueue.append(p[1])
-  
 
-def p_exp(p):
-  '''exp : term possibleTerms'''
-  
+def p_exp_binop(p):
+    '''exp : exp '+' exp
+           | exp '-' exp
+           | exp '*' exp
+           | exp '/' exp
+           | exp '%' exp'''
+    # if p[2] == '+'  : p[0] = p[1] + p[3]
+    # elif p[2] == '-': p[0] = p[1] - p[3]
+    # elif p[2] == '*': p[0] = p[1] * p[3]
+    # elif p[2] == '/': p[0] = p[1] / p[3]
+    print p[0]
 
-def p_possibleTerms(p):
-  '''possibleTerms : possibleTermOp term possibleTerms
-    | '''
-  
+def p_exp_uminus(p):
+    '''exp : '-' exp %prec UMINUS'''
+    p[0] = -p[2]
 
-def p_possibleTermOp(p):
-  '''possibleTermOp : '+'
-  | '-' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
-  
+def p_exp_group(p):
+    '''exp : '(' exp ')' '''
+    p[0] = p[2]
 
-def p_term(p):
-  '''term : factor possibleFactors'''
-  
+# def p_exp_data(p):
+#     '''exp : INT
+#            | FLOAT 
+#            | TRUE
+#            | FALSE
+#            | STRING '''
+#     t[0] = t[1]
 
-def p_possibleFactors(p):
-  '''possibleFactors : possibleFactorOp factor possibleFactors
-    | '''
-  
-
-def p_possibleFactorOp(p):
-  '''possibleFactorOp : '*'
-    | '/'
-    | '%' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
-
-  
-
-def p_factor(p):
-  '''factor : lPar expression rPar
-    | data'''
-
-def p_lPar(p):
-  '''lPar : '(' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
-
-def p_rPar(p):
-  '''rPar : ')' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
-
-  
-
-def p_data(p):
-  '''data : ID possibleIdCall
+def p_exp_data(p):
+  '''exp : ID possibleIdCall
     | constant
     | input '''
   if (len(p) == 3):
@@ -355,6 +339,74 @@ def p_data(p):
         varValues.append(p[1])
     else:
       varValues.append(p[1])
+  p[0] = p[1]
+
+# def p_exp(p):
+#       '''exp : term possibleTerms'''
+  
+
+# def p_possibleTerms(p):
+#   '''possibleTerms : possibleTermOp term possibleTerms
+#     | '''
+  
+
+# def p_possibleTermOp(p):
+#   '''possibleTermOp : '+'
+#   | '-' '''
+#   if (len(p) > 1):
+#     expQueue.append(p[1])
+#   print 
+
+# def p_term(p):
+#   '''term : factor possibleFactors'''
+  
+
+# def p_possibleFactors(p):
+#   '''possibleFactors : possibleFactorOp factor possibleFactors
+#     | '''
+  
+
+# def p_possibleFactorOp(p):
+#   '''possibleFactorOp : '*'
+#     | '/'
+#     | '%' '''
+#   if (len(p) > 1):
+#     expQueue.append(p[1])
+
+  
+
+# def p_factor(p):
+#   '''factor : lPar expression rPar
+#     | data'''
+
+# def p_lPar(p):
+#   '''lPar : '(' '''
+#   if (len(p) > 1):
+#     expQueue.append(p[1])
+
+# def p_rPar(p):
+#   '''rPar : ')' '''
+#   if (len(p) > 1):
+#     expQueue.append(p[1])
+
+  
+
+# def p_data(p):
+#   '''data : ID possibleIdCall
+#     | constant
+#     | input '''
+#   if (len(p) == 3):
+#     global currentTable
+#     global directory
+#     if (p[1] not in currentTable):
+#       if (p[1] not in directory):
+#         print "ERROR, variable ", p[1], " has not been declared"
+#         global correctProgram
+#         correctProgram = False
+#       else:
+#         varValues.append(p[1])
+#     else:
+#       varValues.append(p[1])
   
 
 def p_possibleIdCall(p):
@@ -372,7 +424,7 @@ def p_constant(p):
   if (len(p) > 1):
     varValues.append(p[1])
     expQueue.append(p[1])
-
+  p[0] = p[1]
 
 def p_input(p):
   '''input : INPUT '(' inputPar ')' '''
@@ -393,7 +445,7 @@ if __name__ == '__main__':
             f = open(file,'r')
             data = f.read()
             f.close()
-            if (RiperParser.parse(data, debug = False, tracking=True)):
+            if (RiperParser.parse(data, debug = True, tracking=True)):
               if(correctProgram):
                 print ('This is a correct and complete Riper program');
                 print directory
