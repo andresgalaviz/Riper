@@ -63,7 +63,10 @@ def p_vars(p):
       global correctProgram
       correctProgram = False
     else:
+      # print("Popping")
+      # print(varValues)
       currentTable[p[2]] = [currentType, varValues.pop(-1)]
+      # print(varValues)
       #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
 
 
@@ -98,6 +101,7 @@ def p_arrays(p):
 def p_firstArr(p):
   '''firstArr : type ID '[' INT ']' '=' '{' expression moreExp '}' '''
   if (len(p) > 1):
+    # print(p[4], varValues)
     if (int(p[4]) != len(varValues)):
       print "ERROR, the size of array ", p[2], " is different from the amount of contents"
       global correctProgram
@@ -278,7 +282,7 @@ def p_possibleHigherExpOp(p):
 
 def p_higherExp(p):
   '''higherExp : exp possibleExp'''
-  print(p[1])
+  # print(p[1])
 
 def p_possibleExp(p):
   '''possibleExp : possibleExpOp exp
@@ -301,18 +305,27 @@ def p_exp_binop(p):
            | exp '*' exp
            | exp '/' exp
            | exp '%' exp'''
-    # if p[2] == '+'  : p[0] = p[1] + p[3]
-    # elif p[2] == '-': p[0] = p[1] - p[3]
-    # elif p[2] == '*': p[0] = p[1] * p[3]
-    # elif p[2] == '/': p[0] = p[1] / p[3]
-    print p[0]
+    if p[2] == '+'  : p[0] = p[1] + p[3]
+    elif p[2] == '-': p[0] = p[1] - p[3]
+    elif p[2] == '*': p[0] = p[1] * p[3]
+    elif p[2] == '/': p[0] = p[1] / p[3]
+    print("exp", p[0])
+    # # AQUI VA EL SEMANTIC CUBE
+    # print "Checking semantic cube"
+    # print(p[1], p[2], p[3])
+    # if(p[1] is None):
+    #     p[1].type = directory[p[1]]
+    # if(p[3] is None):
+    #     p[3].type = directory[p[3]][0]
+    # print SemanticCube.SearchSemantic(p[1].type, p[2], p[3].type)
 
 def p_exp_uminus(p):
     '''exp : '-' exp %prec UMINUS'''
     p[0] = -p[2]
 
 def p_exp_group(p):
-    '''exp : '(' exp ')' '''
+    '''exp : '(' exp ')' 
+           | '(' expression ')' '''
     p[0] = p[2]
 
 # def p_exp_data(p):
@@ -339,8 +352,12 @@ def p_exp_data(p):
         varValues.append(p[1])
     else:
       varValues.append(p[1])
-  p[0] = p[1]
+    p[0] = p[2]
+  else:
 
+    p[0] = p[1]
+  print("exp", p[0])
+  
 # def p_exp(p):
 #       '''exp : term possibleTerms'''
   
@@ -445,7 +462,7 @@ if __name__ == '__main__':
             f = open(file,'r')
             data = f.read()
             f.close()
-            if (RiperParser.parse(data, debug = True, tracking=True)):
+            if (RiperParser.parse(data, debug = False, tracking=True)):
               if(correctProgram):
                 print ('This is a correct and complete Riper program');
                 print directory

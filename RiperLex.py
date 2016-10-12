@@ -51,7 +51,7 @@ t_GREATEREQUAL = r'>='
 t_AND = r'&&'
 t_OR = r'\|\|'
 
-t_STRING = r'\".*\"'
+t_STRING = r"'([^\\']+|\\'|\\\\)*'"  # I think this is right ...
 
 # Lookup in case of reserved words
 def t_ID(t):

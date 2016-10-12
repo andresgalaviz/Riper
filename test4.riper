@@ -1,0 +1,10 @@
+int num = -10 + 10 + -(4*5)/-2 - 10; 
+function bool isTrue(bool val) {
+    return val;
+}
+main() {
+    int varFloat5 = 10000;
+    while((1500 > 1500) && isTrue(true)) {
+        varFloat5 = 1111 + 1111;
+    }
+}
