@@ -1,21 +1,21 @@
-int var1 = 10, varInt21 = 12;
+int var1 = 10, varInt21 = 12/2;
 float var3 = 10.5;
 bool var5 = true, varInt22 = false;
-string strVar = "hola", strvAr2 = "adios";
+string strVar = 'hola', strvAr2 = 'adios';
 array int varArr1[2] = {10, 2}, varIntArr2[1] = {12};
 array float varArr1[2] = {10.6, 2}, varIntArr2[1] = {12};
 array bool var51[2] = {true, false}, varInt23[1] = {false};
-array string strVar3[2] = {"hola", "que"}, strvAr4[1] = {"adios"};
+array string strVar3[2] = {'hola', 'que'}, strvAr4[1] = {'adios'};
 
 function int fib() {
     int var12 = 10, varInt24 = 12/3;
     float var31 = 10.5, varFloat3 = 12.5%10, varFloat5 = 12.5;
     bool var52 = true, varInt2 = false;
-    string strVar5 = "hola", strvAr6 = "adios";
+    string strVar5 = 'hola', strvAr6 = 'adios';
     array int varArr1[2] = {10, 2}, varIntArr2[1] = {12};
     array float varArr1[2] = {10.6, 2}, varIntArr2[1] = {12};
     array bool var53[2] = {true, false}, varInt25[1] = {false};
-    array string strVar7[2] = {"hola", "que"}, strvAr8[1] = {"adios"};
+    array string strVar7[2] = {'hola', 'que'}, strvAr8[1] = {'adios'};
     return 0;
 }
 
@@ -25,7 +25,7 @@ function int plusOne(int num) {
 }
 
 function string fibPar(string num, string num2) {
-    return " ";
+    return ' ';
 }
 
 function bool isTrue(bool val) {
@@ -70,9 +70,9 @@ main(int args, string nums) {
         var1 = var1 + 1;
     }
     int valor = input();
-    int valor2 = input("Valor dos");
+    int valor2 = input('Valor dos');
     do {
-        console(fibPar("a", "b"));
+        console(fibPar('a', 'b'));
         i = i - 1*2;
     } while(false || (fib() < i));
 }

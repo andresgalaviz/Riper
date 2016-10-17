@@ -1,15 +1,14 @@
 from collections import defaultdict
-# int       = 0
-# float     = 1
-# string    = 2
-# bool      = 3
-# +         = 0
-# -         = 1
-# *         = 2
-# /         = 3
-# %         = 4
-
-
+operMap = {
+            'int'       : 0,
+            'float'     : 1,
+            'string'    : 2,
+            'bool'      : 3,
+            '+'         : 0,
+            '-'         : 1,
+            '*'         : 2,
+            '/'         : 3,
+            '%'         : 4}
 
 semanticCube = {}
 # Return -1 if not possible
@@ -33,3 +32,6 @@ semanticCube[1,4,0] = 0
 
 # "string1" + "string2" = "string1string2"
 semanticCube[2,0,2] = 2
+
+def SearchSemantic(operandOne, operator, operandTwo):
+    return semanticCube[operMap[operandOne], operMap[operator], operMap[operandTwo]];

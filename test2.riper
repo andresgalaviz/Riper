@@ -11,8 +11,8 @@ function void aba() {
 
 function int plusOne(int num) {
     int var11 = 20;
-    string word = "hola";
-    word = "another word";
+    string word = 'hola';
+    word = 'another word';
     int z = aba();
     
     int new = var10;

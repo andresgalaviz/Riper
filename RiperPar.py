@@ -5,6 +5,7 @@
 import ply.yacc as yacc
 import sys
 import RiperLex
+import SemanticCube
 # import the lexical tokens
 tokens = RiperLex.tokens
 
@@ -17,6 +18,14 @@ global expQueue
 expQueue = []
 global correctProgram
 correctProgram = True
+
+# precedence = (
+#     ('left','+','-'),
+#     ('left','*','/', '%'),
+#     ('right','UMINUS'),
+#     )
+
+
 
 # define grammar rules
 def p_program(p):
@@ -54,7 +63,10 @@ def p_vars(p):
       global correctProgram
       correctProgram = False
     else:
+      # print("Popping")
+      # print(varValues)
       currentTable[p[2]] = [currentType, varValues.pop(-1)]
+      # print(varValues)
       #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
 
 
@@ -89,10 +101,11 @@ def p_arrays(p):
 def p_firstArr(p):
   '''firstArr : type ID '[' INT ']' '=' '{' expression moreExp '}' '''
   if (len(p) > 1):
+    # print(p[4], varValues)
     if (int(p[4]) != len(varValues)):
-      #print "ERROR, the size of array ", p[2], " is different from the amount of contents"
+      print "ERROR, the size of array ", p[2], " is different from the amount of contents"
       global correctProgram
-      #correctProgram = False
+      correctProgram = False
     del varValues[:]
 
 def p_moreExp(p):
@@ -105,9 +118,9 @@ def p_moreArray(p):
     | '''
   if (len(p) > 1):
     if (int(p[4]) != len(varValues)):
-      #print "ERROR, the size of array ", p[2], " is different from the amount of contents"
+      print "ERROR, the size of array ", p[2], " is different from the amount of contents"
       global correctProgram
-      #correctProgram = False
+      correctProgram = False
     del varValues[:]
   
 
@@ -266,11 +279,10 @@ def p_possibleHigherExpOp(p):
     | OR '''
   if (len(p) > 1):
     expQueue.append(p[1])
-  
 
 def p_higherExp(p):
   '''higherExp : exp possibleExp'''
-  
+  # print(p[1])
 
 def p_possibleExp(p):
   '''possibleExp : possibleExpOp exp
@@ -286,23 +298,84 @@ def p_possibleExpOp(p):
     | EQUALTO '''
   if (len(p) > 1):
     expQueue.append(p[1])
-  
 
+# def p_exp_binop(p):
+#     '''exp : exp '+' exp
+#            | exp '-' exp
+#            | exp '*' exp
+#            | exp '/' exp
+#            | exp '%' exp'''
+#     if p[2] == '+'  : p[0] = p[1] + p[3]
+#     elif p[2] == '-': p[0] = p[1] - p[3]
+#     elif p[2] == '*': p[0] = p[1] * p[3]
+#     elif p[2] == '/': p[0] = p[1] / p[3]
+#     print("exp", p[0])
+#     # # AQUI VA EL SEMANTIC CUBE
+#     # print "Checking semantic cube"
+#     # print(p[1], p[2], p[3])
+#     # if(p[1] is None):
+#     #     p[1].type = directory[p[1]]
+#     # if(p[3] is None):
+#     #     p[3].type = directory[p[3]][0]
+#     # print SemanticCube.SearchSemantic(p[1].type, p[2], p[3].type)
+
+# def p_exp_uminus(p):
+#     '''exp : '-' exp %prec UMINUS'''
+#     p[0] = -p[2]
+
+# def p_exp_group(p):
+#     '''exp : '(' exp ')' 
+#            | '(' expression ')' '''
+#     p[0] = p[2]
+
+# def p_exp_data(p):
+#     '''exp : INT
+#            | FLOAT 
+#            | TRUE
+#            | FALSE
+#            | STRING '''
+#     t[0] = t[1]
+
+# def p_exp_data(p):
+#   '''exp : ID possibleIdCall
+#     | constant
+#     | input '''
+#   if (len(p) == 3):
+#     global currentTable
+#     global directory
+#     if (p[1] not in currentTable):
+#       if (p[1] not in directory):
+#         print "ERROR, variable ", p[1], " has not been declared"
+#         global correctProgram
+#         correctProgram = False
+#       else:
+#         varValues.append(p[1])
+#     else:
+#       varValues.append(p[1])
+#     p[0] = p[2]
+#   else:
+
+#     p[0] = p[1]
+#   print("exp", p[0])
+  
 def p_exp(p):
-  '''exp : term possibleTerms'''
+      '''exp : term possibleTerms'''
   
 
 def p_possibleTerms(p):
-  '''possibleTerms : possibleTermOp term possibleTerms
+  '''possibleTerms : possibleTermOp possibleSign term possibleTerms
     | '''
-  
+
+def p_possibleSign(p):
+  '''possibleSign : '+'
+  | '-' '''   
 
 def p_possibleTermOp(p):
   '''possibleTermOp : '+'
   | '-' '''
   if (len(p) > 1):
     expQueue.append(p[1])
-  
+  print 
 
 def p_term(p):
   '''term : factor possibleFactors'''
@@ -323,8 +396,19 @@ def p_possibleFactorOp(p):
   
 
 def p_factor(p):
-  '''factor : '(' expression ')'
-    | data'''
+  '''factor : lPar expression rPar
+              | data'''
+
+def p_lPar(p):
+  '''lPar : '(' '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
+
+def p_rPar(p):
+  '''rPar : ')' '''
+  if (len(p) > 1):
+    expQueue.append(p[1])
+
   
 
 def p_data(p):
@@ -360,7 +444,7 @@ def p_constant(p):
   if (len(p) > 1):
     varValues.append(p[1])
     expQueue.append(p[1])
-
+  p[0] = p[1]
 
 def p_input(p):
   '''input : INPUT '(' inputPar ')' '''
