@@ -359,7 +359,7 @@ def p_possibleExpOp(p):
 #   print("exp", p[0])
   
 def p_exp(p):
-      '''exp : term possibleTerms'''
+      '''exp : possibleSign term possibleTerms'''
   
 
 def p_possibleTerms(p):
@@ -368,7 +368,8 @@ def p_possibleTerms(p):
 
 def p_possibleSign(p):
   '''possibleSign : '+'
-  | '-' '''   
+  | '-' 
+  | '''   
 
 def p_possibleTermOp(p):
   '''possibleTermOp : '+'
