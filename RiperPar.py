@@ -6,462 +6,418 @@ import ply.yacc as yacc
 import sys
 import RiperLex
 import SemanticCube
+
 # import the lexical tokens
 tokens = RiperLex.tokens
 
-directory = {}
-global currentTable
-currentTable = {}
+# Global function and variable directory
+global globalDirectory
+globalDirectory = {}
+
+# Local variable directory
+global localDirectory
+localDirectory = {}
+
+#Counter of expressions in arrays
 global expCount
 expCount = 0;
+
 global expQueue
 expQueue = []
 global correctProgram
 correctProgram = True
 
-# precedence = (
-#     ('left','+','-'),
-#     ('left','*','/', '%'),
-#     ('right','UMINUS'),
-#     )
 
-
-
-# define grammar rules
+# Global Riper code structure
 def p_program(p):
-  '''program : globalVarDeclar functionDeclar main'''
-  p[0] = 'OK'  
+    '''program : globalVarDeclar functionDeclar main'''
+    p[0] = 'OK'  
 
+
+# Global variable declaration section
 def p_globalVarDeclar(p):
-  '''globalVarDeclar : initVarDeclar '''
-  if (len(p) > 1):
-    global currentTable
-    global directory
-    if (len(currentTable) > 0):
-      directory = currentTable.copy()
-      currentTable = {}
+    '''globalVarDeclar : initVarDeclar '''
+    if (len(p) > 1):
+        global localDirectory
+        global globalDirectory
+        if (len(localDirectory) > 0):
+            globalDirectory = localDirectory.copy()
+            localDirectory = {}
 
 
+# Variable initialization section
 def p_initVarDeclar(p):
-  '''initVarDeclar : varDeclar initVarDeclar
-                   | '''
+    '''initVarDeclar : varDeclar initVarDeclar
+                     | '''
+
+
+# Function declaration section                   
 def p_functionDeclar(p):
-  '''functionDeclar : function functionDeclar
-                    | '''
+    '''functionDeclar : function functionDeclar
+                      | '''
 
+# Variable or array declaration statute
 def p_varDeclar(p):
-  '''varDeclar : vars ';'
-    | ARRAY arrays ';' '''
+    '''varDeclar : vars ';'
+                 | ARRAY arrays ';' '''
   
 
+# Variable declaration statue
 def p_vars(p):
-  '''vars : type ID '=' expression moreVar'''
-  if (len(p) > 1):
-    global currentTable
-    if (p[2] in currentTable or p[2] in directory):
-      print "ERROR, variable ", p[2], " has already been declared"
-      global correctProgram
-      correctProgram = False
-    else:
-      # print("Popping")
-      # print(varValues)
-      currentTable[p[2]] = [currentType]
-      # print(varValues)
-      #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
+    '''vars : type ID '=' expression moreVar'''
+    if (len(p) > 1):
+        global localDirectory
+        if (p[2] in localDirectory or p[2] in globalDirectory):
+            print "ERROR, variable ", p[2], " has already been declared"
+            global correctProgram
+            correctProgram = False
+        else:
+            localDirectory[p[2]] = [currentType]
+            #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
 
 
-
+# Grammar rule used when more than one variable is declared
 def p_moreVar(p):
-  '''moreVar : ',' ID '=' expression moreVar
-    | '''
-  if (len(p) > 1):
-    global currentTable
-    if (p[2] in currentTable or p[2] in directory):
-      print "ERROR, variable ", p[2], " has already been declared"
-      global correctProgram
-      correctProgram = False
-    else:
-      currentTable[p[2]] = [currentType]
-      #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
+    '''moreVar : ',' ID '=' expression moreVar
+               | '''
+    if (len(p) > 1):
+        global localDirectory
+        if (p[2] in localDirectory or p[2] in globalDirectory):
+            print "ERROR, variable ", p[2], " has already been declared"
+            global correctProgram
+            correctProgram = False
+        else:
+            localDirectory[p[2]] = [currentType]
+            #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
   
 
+# Grammar rulle used to match to one of the basic variable type declaration tokens
 def p_type(p):
-  '''type : INTTYPE
-    | FLOATTYPE
-    | STRINGTYPE
-    | BOOLTYPE '''
-  if (len(p) > 1):
-    global currentType
-    currentType = p[1]
+    '''type : INTTYPE
+            | FLOATTYPE
+            | STRINGTYPE
+            | BOOLTYPE '''
+    if (len(p) > 1):
+        global currentType
+        currentType = p[1]
 
-  
+# 
 def p_arrays(p):
-  '''arrays : array moreArray '''
+    '''arrays : array moreArray '''
 
 def p_array(p):
-  '''array : type ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
-  if (len(p) > 1):
-    # print(p[4], varValues)
-    global expCount
-    if (int(p[4]) != expCount):
-      print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
-      global correctProgram
-      correctProgram = False
-    expCount = 0;
+    '''array : type ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
+    if (len(p) > 1):
+        global expCount
+        if (int(p[4][1]) != expCount):
+            print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
+            global correctProgram
+            correctProgram = False
+        expCount = 0;
 
 def p_moreExp(p):
-  '''moreExp : ',' expression sumExpCount moreExp
-    | '''
+    '''moreExp : ',' expression sumExpCount moreExp
+        | '''
 
 def p_sumExpCount(p):
-  '''sumExpCount : '''
-  global expCount
-  expCount += 1
+    '''sumExpCount : '''
+    global expCount
+    expCount += 1
 
   
 
 def p_moreArray(p):
-  '''moreArray : nextArray moreArray
-    | '''
+    '''moreArray : nextArray moreArray
+        | '''
 
 def p_nextArray(p):
-  '''nextArray :  ',' ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
-  global expCount
-  if (int(p[4]) != expCount):
-    print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
-    global correctProgram
-    correctProgram = False
-  expCount = 0;
+    '''nextArray :  ',' ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
+    global expCount
+    if (int(p[4][1]) != expCount):
+        print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
+        global correctProgram
+        correctProgram = False
+    expCount = 0;
   
 
 def p_function(p):
   '''function : FUNCTION funcType ID '(' par ')' '{' block RETURN returnType ';' '}' '''
   if (len(p) > 1):
-    global currentTable
+    global localDirectory
     global currentFuncType
-    directory[p[3]] = [currentFuncType]
-    currentTable = {}
+    globalDirectory[p[3]] = [currentFuncType]
+    localDirectory = {}
   
 
 def p_funcType(p):
-  '''funcType : INTTYPE
-    | FLOATTYPE
-    | STRINGTYPE
-    | BOOLTYPE
-    | VOID '''
-  if (len(p) > 1):
-    global currentFuncType
-    currentFuncType = p[1]
+    '''funcType : INTTYPE
+        | FLOATTYPE
+        | STRINGTYPE
+        | BOOLTYPE
+        | VOID '''
+    if (len(p) > 1):
+        global currentFuncType
+        currentFuncType = p[1]
   
 
 def p_returnType(p):
-  '''returnType : expression
-    | VOID '''
+    '''returnType : expression
+        | VOID '''
   
 
 def p_main(p):
-  '''main : MAIN '(' par ')' '{' block '}' '''
-  if (len(p) > 1):
-    global currentTable
-    if (len(currentTable) > 0):
-      directory['main'] = currentTable
-      currentTable = {}
+    '''main : MAIN '(' par ')' '{' block '}' '''
+    if (len(p) > 1):
+        global localDirectory
+        if (len(localDirectory) > 0):
+            globalDirectory['main'] = localDirectory
+            localDirectory = {}
   
 
 def p_par(p):
-  '''par : type ID morePar
-         | '''
-  if (len(p) > 1):
-    global currentTable
-    currentTable[p[2]] = [currentType]
+    '''par : type ID morePar
+        | '''
+    if (len(p) > 1):
+        global localDirectory
+        localDirectory[p[2]] = [currentType]
   
 
 def p_morePar(p):
-  '''morePar : ',' type ID morePar
-    | '''
-  if (len(p) > 1):
-    global currentTable
-    currentTable[p[2]] = [currentType]
+    '''morePar : ',' type ID morePar
+        | '''
+    if (len(p) > 1):
+        global localDirectory
+        localDirectory[p[2]] = [currentType]
   
 
 def p_funcCall(p):
-  '''funcCall : ID '(' parIn ')' '''
+    '''funcCall : ID '(' parIn ')' '''
   
 
 def p_parIn(p):
-  '''parIn : expression moreParIn
-    | '''
+    '''parIn : expression moreParIn
+        | '''
   
 
 def p_moreParIn(p):
-  '''moreParIn : ',' expression moreParIn 
-     | '''
+    '''moreParIn : ',' expression moreParIn 
+        | '''
   
 
 def p_block(p):
-  '''block : varDeclar block
-            | assign ';' block
-            | conditional block
-            | loop block
-            | funcCall ';' block
-            | output block
-            | input block
-            | '''
+    '''block : varDeclar block
+        | assign ';' block
+        | conditional block
+        | loop block
+        | funcCall ';' block
+        | output block
+        | input block
+        | '''
   
 
 def p_loopBlock(p):
-  '''loopBlock : assign ';' loopBlock
-    | conditional loopBlock
-    | loop loopBlock
-    | funcCall ';' loopBlock
-    | output loopBlock
-    | input loopBlock
-    | '''
+    '''loopBlock : assign ';' loopBlock
+        | conditional loopBlock
+        | loop loopBlock
+        | funcCall ';' loopBlock
+        | output loopBlock
+        | input loopBlock
+        | '''
   
 
 def p_assign(p):
-  '''assign : ID possibleArray '=' expression '''
-  if (len(p) > 1):
-    global currentTable
-    global directory
-    if (p[1] not in currentTable):
-      if (p[1] not in directory):
-        print "ERROR, variable ", p[1], " has not been declared"
-        global correctProgram
-        correctProgram = False
+    '''assign : ID possibleArray '=' expression '''
+    if (len(p) > 1):
+        global localDirectory
+        global globalDirectory
+        if (p[1] not in localDirectory):
+            if (p[1] not in globalDirectory):
+                print "ERROR, variable ", p[1], " has not been declared"
+                global correctProgram
+                correctProgram = False
 
 def p_possibleArray(p):
-  '''possibleArray : '[' exp ']'
-    | '''
+    '''possibleArray : '[' exp ']'
+        | '''
   
 
 def p_conditional(p):
-  '''conditional : IF '(' expression ')' '{' block '}' possibleElif possibleElse '''
+    '''conditional : IF '(' expression ')' '{' block '}' possibleElif possibleElse '''
   
 
 def p_possibleElif(p):
-  '''possibleElif : ELIF '(' expression ')' '{' block '}' possibleElif
-    | '''
+    '''possibleElif : ELIF '(' expression ')' '{' block '}' possibleElif
+        | '''
   
 
 def p_possibleElse(p):
-  '''possibleElse : ELSE '{' block '}' 
-    | '''
+    '''possibleElse : ELSE '{' block '}' 
+        | '''
   
 
 def p_output(p):
-  '''output : CONSOLE '(' expression ')' ';' '''
+    '''output : CONSOLE '(' expression ')' ';' '''
   
 
 def p_loop(p):
-  '''loop : for
-    | while
-    | doWhile '''
+    '''loop : for
+        | while
+        | doWhile '''
   
 
 def p_for(p):
-  '''for : FOR '('  expression ';' assign ')' '{' loopBlock '}' '''
+    '''for : FOR '('  expression ';' assign ')' '{' loopBlock '}' '''
   
 
 def p_while(p):
-  '''while : WHILE '(' expression ')' '{' loopBlock '}' '''
+    '''while : WHILE '(' expression ')' '{' loopBlock '}' '''
   
 
 def p_doWhile(p):
-  '''doWhile : DO '{' loopBlock '}' WHILE '(' expression ')' ';' '''
+    '''doWhile : DO '{' loopBlock '}' WHILE '(' expression ')' ';' '''
   
 
 def p_expression(p):
-  '''expression : higherExp possibleHigherExp'''
-  if (len(p) > 1):
-    del expQueue[:]
+    '''expression : higherExp possibleHigherExp'''
+    if (len(p) > 1):
+        del expQueue[:]
   
 
 def p_possibleHigherExp(p):
-  '''possibleHigherExp : possibleHigherExpOp higherExp
-    | '''
+    '''possibleHigherExp : possibleHigherExpOp higherExp
+        | '''
   
 
 def p_possibleHigherExpOp(p):
-  '''possibleHigherExpOp : AND
-    | OR '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
+    '''possibleHigherExpOp : AND
+        | OR '''
+    if (len(p) > 1):
+        expQueue.append(p[1])
+
 
 def p_higherExp(p):
-  '''higherExp : exp possibleExp'''
-  # print(p[1])
+    '''higherExp : exp possibleExp'''
+
 
 def p_possibleExp(p):
-  '''possibleExp : possibleExpOp exp
-    | '''
+    '''possibleExp : possibleExpOp exp
+        | '''
   
 
 def p_possibleExpOp(p):
-  '''possibleExpOp : LESS
-    | GREATER
-    | LESSEQUAL
-    | GREATEREQUAL
-    | DIFFERENT
-    | EQUALTO '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
-
-# def p_exp_binop(p):
-#     '''exp : exp '+' exp
-#            | exp '-' exp
-#            | exp '*' exp
-#            | exp '/' exp
-#            | exp '%' exp'''
-#     if p[2] == '+'  : p[0] = p[1] + p[3]
-#     elif p[2] == '-': p[0] = p[1] - p[3]
-#     elif p[2] == '*': p[0] = p[1] * p[3]
-#     elif p[2] == '/': p[0] = p[1] / p[3]
-#     print("exp", p[0])
-#     # # AQUI VA EL SEMANTIC CUBE
-#     # print "Checking semantic cube"
-#     # print(p[1], p[2], p[3])
-#     # if(p[1] is None):
-#     #     p[1].type = directory[p[1]]
-#     # if(p[3] is None):
-#     #     p[3].type = directory[p[3]][0]
-#     # print SemanticCube.SearchSemantic(p[1].type, p[2], p[3].type)
-
-# def p_exp_uminus(p):
-#     '''exp : '-' exp %prec UMINUS'''
-#     p[0] = -p[2]
-
-# def p_exp_group(p):
-#     '''exp : '(' exp ')' 
-#            | '(' expression ')' '''
-#     p[0] = p[2]
-
-# def p_exp_data(p):
-#     '''exp : INT
-#            | FLOAT 
-#            | TRUE
-#            | FALSE
-#            | STRING '''
-#     t[0] = t[1]
-
-# def p_exp_data(p):
-#   '''exp : ID possibleIdCall
-#     | constant
-#     | input '''
-#   if (len(p) == 3):
-#     global currentTable
-#     global directory
-#     if (p[1] not in currentTable):
-#       if (p[1] not in directory):
-#         print "ERROR, variable ", p[1], " has not been declared"
-#         global correctProgram
-#         correctProgram = False
-#       else:
-#         varValues.append(p[1])
-#     else:
-#       varValues.append(p[1])
-#     p[0] = p[2]
-#   else:
-
-#     p[0] = p[1]
-#   print("exp", p[0])
+    '''possibleExpOp : LESS
+        | GREATER
+        | LESSEQUAL
+        | GREATEREQUAL
+        | DIFFERENT
+        | EQUALTO '''
+    if (len(p) > 1):
+        expQueue.append(p[1])
   
 def p_exp(p):
-      '''exp : possibleSign term possibleTerms'''
+    '''exp : possibleSign term possibleTerms'''
   
 
 def p_possibleTerms(p):
-  '''possibleTerms : possibleTermOp possibleSign term possibleTerms
-    | '''
+    '''possibleTerms : possibleTermOp possibleSign term possibleTerms
+        | '''
 
 def p_possibleSign(p):
-  '''possibleSign : '+'
-  | '-' 
-  | '''   
+    '''possibleSign : '+'
+        | '-' 
+        | '''   
 
 def p_possibleTermOp(p):
-  '''possibleTermOp : '+'
-  | '-' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
+    '''possibleTermOp : '+'
+        | '-' '''
+    if (len(p) > 1):
+        expQueue.append(p[1])
 
 
 def p_term(p):
-  '''term : factor possibleFactors'''
+    '''term : factor possibleFactors'''
   
 
 def p_possibleFactors(p):
-  '''possibleFactors : possibleFactorOp factor possibleFactors
-    | '''
+    '''possibleFactors : possibleFactorOp factor possibleFactors
+        | '''
   
 
 def p_possibleFactorOp(p):
-  '''possibleFactorOp : '*'
-    | '/'
-    | '%' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
-
+    '''possibleFactorOp : '*'
+        | '/'
+        | '%' '''
+    if (len(p) > 1):
+        expQueue.append(p[1])
+  
   
 
 def p_factor(p):
-  '''factor : lPar expression rPar
-              | data'''
+    '''factor : lPar expression rPar
+        | data'''
 
 def p_lPar(p):
-  '''lPar : '(' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
+    '''lPar : '(' '''
+    if (len(p) > 1):
+        expQueue.append(p[1])
 
 def p_rPar(p):
-  '''rPar : ')' '''
-  if (len(p) > 1):
-    expQueue.append(p[1])
+    '''rPar : ')' '''
+    if (len(p) > 1):
+        expQueue.append(p[1])
 
   
 
 def p_data(p):
-  '''data : ID possibleIdCall
-    | constant
-    | input '''
-  print "CONSTANT IS"
-  print p[1]
-  if (len(p) == 3):
-    global currentTable
-    global directory
-    if (p[1] not in currentTable):
-      if (p[1] not in directory):
-        print "ERROR, variable ", p[1], " has not been declared"
-        global correctProgram
-        correctProgram = False
+    '''data : ID possibleIdCall
+        | constant
+        | input '''
+    print "CONSTANT IS"
+    print p[1]
+    if (len(p) == 3):
+        global localDirectory
+        global globalDirectory
+        if (p[1] not in localDirectory):
+            if (p[1] not in globalDirectory):
+                print "ERROR, variable ", p[1], " has not been declared"
+                global correctProgram
+                correctProgram = False
 
 
 def p_possibleIdCall(p):
-  '''possibleIdCall : '[' expression ']'
-    | '(' parIn ')'
-    | '''
-  
+    '''possibleIdCall : '[' expression ']'
+        | '(' parIn ')'
+        | '''
+    if(len(p) == 4):
+        p[0] = p[2]
+    else:
+        p[0] = ''
 
 def p_constant(p):
-  '''constant : INT
-    | FLOAT
-    | TRUE
-    | FALSE
-    | STRING'''
-  if (len(p) > 1):
-    expQueue.append(p[1])
-    print p[1][0]
-  p[0] = p[1]
+    '''constant : INT
+        | FLOAT
+        | TRUE
+        | FALSE
+        | STRING'''
+    if (len(p) > 1):
+        expQueue.append(p[1])
+        print p[1][0]
+    p[0] = p[1]
 
 def p_input(p):
-  '''input : INPUT '(' inputPar ')' '''
-  
+    '''input : INPUT '(' inputPar ')' '''  
+    p[0] = ('INPUT', p[3])
+
 def p_inputPar(p):
-  '''inputPar : STRING 
-                 |  '''
+    '''inputPar : STRING 
+        |  '''
+    if(len(p) > 1):    
+        p[0] = p[1]
+    else:
+        p[0] = ''
 
 def p_error(p):
-      print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
+    print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
 
   # Build the parser
 RiperParser = yacc.yacc()
@@ -473,9 +429,9 @@ if __name__ == '__main__':
             data = f.read()
             f.close()
             if (RiperParser.parse(data, debug = False, tracking=True)):
-              if(correctProgram):
-                print ('This is a correct and complete Riper program');
-                print directory
+                if(correctProgram):
+                    print ('This is a correct and complete Riper program');
+                    print globalDirectory
         except EOFError:
             print(EOFError)
     else:
