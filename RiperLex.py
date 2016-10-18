@@ -67,9 +67,10 @@ def t_FLOAT(t):
 def t_INT(t):
     r'(-)?[0-9]+'
     
-    t.value = int(t.value)
-    print(t.value)
+    t.value = ('int', int(t.value))
+    t.type = reserved.get(t.value,'INT')
     return t
+
     
 # Define a rule so we can track line numbers
 def t_newline(t):

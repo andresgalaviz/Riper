@@ -12,8 +12,8 @@ tokens = RiperLex.tokens
 directory = {}
 global currentTable
 currentTable = {}
-global varValues
-varValues = []
+global expCount
+expCount = 0;
 global expQueue
 expQueue = []
 global correctProgram
@@ -65,7 +65,7 @@ def p_vars(p):
     else:
       # print("Popping")
       # print(varValues)
-      currentTable[p[2]] = [currentType, varValues.pop(-1)]
+      currentTable[p[2]] = [currentType]
       # print(varValues)
       #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
 
@@ -81,7 +81,7 @@ def p_moreVar(p):
       global correctProgram
       correctProgram = False
     else:
-      currentTable[p[2]] = [currentType, varValues.pop(-1)]
+      currentTable[p[2]] = [currentType]
       #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
   
 
@@ -96,32 +96,42 @@ def p_type(p):
 
   
 def p_arrays(p):
-  '''arrays : firstArr moreArray '''
+  '''arrays : array moreArray '''
 
-def p_firstArr(p):
-  '''firstArr : type ID '[' INT ']' '=' '{' expression moreExp '}' '''
+def p_array(p):
+  '''array : type ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
   if (len(p) > 1):
     # print(p[4], varValues)
-    if (int(p[4]) != len(varValues)):
-      print "ERROR, the size of array ", p[2], " is different from the amount of contents"
+    global expCount
+    if (int(p[4]) != expCount):
+      print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
       global correctProgram
       correctProgram = False
-    del varValues[:]
+    expCount = 0;
 
 def p_moreExp(p):
-  '''moreExp : ',' expression moreExp
+  '''moreExp : ',' expression sumExpCount moreExp
     | '''
+
+def p_sumExpCount(p):
+  '''sumExpCount : '''
+  global expCount
+  expCount += 1
+
   
 
 def p_moreArray(p):
-  '''moreArray : ',' ID '[' INT ']' '=' '{' expression moreExp '}' moreArray
+  '''moreArray : nextArray moreArray
     | '''
-  if (len(p) > 1):
-    if (int(p[4]) != len(varValues)):
-      print "ERROR, the size of array ", p[2], " is different from the amount of contents"
-      global correctProgram
-      correctProgram = False
-    del varValues[:]
+
+def p_nextArray(p):
+  '''nextArray :  ',' ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
+  global expCount
+  if (int(p[4]) != expCount):
+    print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
+    global correctProgram
+    correctProgram = False
+  expCount = 0;
   
 
 def p_function(p):
@@ -129,10 +139,8 @@ def p_function(p):
   if (len(p) > 1):
     global currentTable
     global currentFuncType
-    global varValues
     directory[p[3]] = [currentFuncType]
     currentTable = {}
-    del varValues[:]
   
 
 def p_funcType(p):
@@ -376,7 +384,7 @@ def p_possibleTermOp(p):
   | '-' '''
   if (len(p) > 1):
     expQueue.append(p[1])
-  print 
+
 
 def p_term(p):
   '''term : factor possibleFactors'''
@@ -416,6 +424,8 @@ def p_data(p):
   '''data : ID possibleIdCall
     | constant
     | input '''
+  print "CONSTANT IS"
+  print p[1]
   if (len(p) == 3):
     global currentTable
     global directory
@@ -424,11 +434,7 @@ def p_data(p):
         print "ERROR, variable ", p[1], " has not been declared"
         global correctProgram
         correctProgram = False
-      else:
-        varValues.append(p[1])
-    else:
-      varValues.append(p[1])
-  
+
 
 def p_possibleIdCall(p):
   '''possibleIdCall : '[' expression ']'
@@ -443,8 +449,8 @@ def p_constant(p):
     | FALSE
     | STRING'''
   if (len(p) > 1):
-    varValues.append(p[1])
     expQueue.append(p[1])
+    print p[1][0]
   p[0] = p[1]
 
 def p_input(p):
