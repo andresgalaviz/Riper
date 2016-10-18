@@ -27,6 +27,14 @@ expQueue = []
 global correctProgram
 correctProgram = True
 
+global operandStack
+operandStack = []
+global operatorStack
+operatorStack = []
+
+global cuadruples
+cuadruples = []
+
 
 # Global Riper code structure
 def p_program(p):
@@ -336,25 +344,41 @@ def p_possibleTermOp(p):
 
 def p_term(p):
     '''term : factor possibleFactors'''
+    print p[1] + p[2]
   
 
 def p_possibleFactors(p):
     '''possibleFactors : possibleFactorOp factor possibleFactors
         | '''
-  
+    if (len(p) == 4):
+        p[0] = p[1] + p[2] + p[3]
+    if (len(p) == 1):
+        p[0] = ''
 
 def p_possibleFactorOp(p):
     '''possibleFactorOp : '*'
         | '/'
         | '%' '''
+    p[0] = p[1]
     if (len(p) > 1):
         expQueue.append(p[1])
+    #PUSH OPERATOR KEYCODE TO operatorStack    
+
   
   
 
 def p_factor(p):
     '''factor : lPar expression rPar
         | data'''
+    if (len(p) == 2):
+        p[0] = p[1]
+    if (operatorStack[-1] in ['*', '/', '%']):
+        op = operatorStack.pop()
+        operand2 = operandStack.pop()
+        operand1 = operandStack.pop()
+        #CHECK SEMANTIC FOR operand1 op operand2, right now operand1 and operand2 are tuples, where first element is the keycode type
+
+
 
 def p_lPar(p):
     '''lPar : '(' '''
@@ -372,8 +396,6 @@ def p_data(p):
     '''data : ID possibleIdCall
         | constant
         | input '''
-    print "CONSTANT IS"
-    print p[1]
     if (len(p) == 3):
         global localDirectory
         global globalDirectory
@@ -382,6 +404,8 @@ def p_data(p):
                 print "ERROR, variable ", p[1], " has not been declared"
                 global correctProgram
                 correctProgram = False
+    p[0] = p[1]
+    operandStack.append(p[1])
 
 
 def p_possibleIdCall(p):
@@ -399,10 +423,8 @@ def p_constant(p):
         | TRUE
         | FALSE
         | STRING'''
-    if (len(p) > 1):
-        expQueue.append(p[1])
-        print p[1][0]
     p[0] = p[1]
+
 
 def p_input(p):
     '''input : INPUT '(' inputPar ')' '''  

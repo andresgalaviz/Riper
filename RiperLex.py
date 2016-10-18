@@ -51,8 +51,10 @@ t_GREATEREQUAL = r'>='
 t_AND = r'&&'
 t_OR = r'\|\|'
 
-t_STRING = r"'([^\\']+|\\'|\\\\)*'"  # I think this is right ...
-
+def t_STRING(t):
+    r"'([^\\']+|\\'|\\\\)*'"  # I think this is right ...
+    t.value = (4, t.value)
+    return t
 # Lookup in case of reserved words
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -61,14 +63,13 @@ def t_ID(t):
 
 def t_FLOAT(t):
     r'(-)?[0-9]+\.[0-9]+'
-    t.value = float(t.value)
+    t.value = (1, float(t.value))
     return t
 
 def t_INT(t):
     r'(-)?[0-9]+'
     
-    t.value = ('int', int(t.value))
-    t.type = reserved.get(t.value,'INT')
+    t.value = (0, int(t.value))
     return t
 
     
