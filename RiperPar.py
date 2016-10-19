@@ -417,7 +417,6 @@ def p_data(p):
         global globalDirectory
         if (p[1] not in localDirectory):
             if (p[1] not in globalDirectory):
-                print("Line num: %d" % (p.lineno))
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
     p[0] = p[1]
