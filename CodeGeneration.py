@@ -21,9 +21,12 @@ def GenerateCuadruple():
     result = SemanticCube.SearchSemanticCube(op, operand1[0], operand2[0])
 
     if (result != -1):
-        cuadruples.append([op, operand1, operand2, (result, '')])
+        
         if(op != '='):
+            cuadruples.append([op, operand1, operand2, (result, '')])
             operandStack.append((result, '')) #Second position would be the temporal name?
+        else:
+            cuadruples.append([op, operand1, None, operand2])
     else:
         print("Error: Cannot %s (%s, %s)" % (op, invOpMap[operand1[0]], invOpMap[operand2[0]]))
         sys.exit()
