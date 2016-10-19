@@ -338,11 +338,17 @@ def p_possibleSign(p):
     '''possibleSign : '+'
         | '-' 
         | '''   
+    if(len(p) > 1):
+        operatorStack.append('*')
+        if(p[1] == '-'):
+            operandStack.append((0, -1))
+        else:
+            operandStack.append((0, 1))
 
 def p_possibleTermOp(p):
     '''possibleTermOp : '+'
         | '-' '''
-    print "PUSHING +-"
+    print "PUSHING", p[1]
     operatorStack.append(p[1])
 
 
@@ -363,8 +369,10 @@ def p_possibleFactorOp(p):
     '''possibleFactorOp : '*'
         | '/'
         | '%' '''
+    if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
+        GenerateCuadruple()
     p[0] = p[1]
-    print "PUSHHING */"
+    print "PUSHING ", p[1]
     operatorStack.append(p[1])   
 
   
@@ -376,7 +384,7 @@ def p_factor(p):
     if (len(p) == 2):
         p[0] = p[1]
         if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
-            print "TOP */, GENERATING"
+            print "TOP GENERATING ", operatorStack[-1]
             GenerateCuadruple()
 
 
@@ -392,8 +400,8 @@ def p_rPar(p):
   
 
 def p_data(p):
-    '''data : ID possibleIdCall
-        | constant
+    '''data : constant
+        | ID possibleIdCall
         | input '''
     if (len(p) == 3):
         global localDirectory
@@ -404,7 +412,7 @@ def p_data(p):
                 global correctProgram
                 correctProgram = False
     p[0] = p[1]
-    print "PUSHING TO OPERAND"
+    print "PUSHING OPERAND ", p[1]  
     operandStack.append(p[1])
 
 
@@ -420,8 +428,7 @@ def p_possibleIdCall(p):
 def p_constant(p):
     '''constant : INT
         | FLOAT
-        | TRUE
-        | FALSE
+        | BOOL
         | STRING'''
     p[0] = p[1]
 
@@ -441,10 +448,12 @@ def p_inputPar(p):
 def p_error(p):
     print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
 
+
 def GenerateCuadruple():
     op = operatorStack.pop()
     operand2 = operandStack.pop()
     operand1 = operandStack.pop()
+    print operand1, op, operand2
     result = SemanticCube.SearchSemantic(operand1, op, operand2)
     if (result != -1):
         cuadruples.append([op, operand1, operand2, (result, '')])
@@ -467,6 +476,8 @@ if __name__ == '__main__':
                     print ('This is a correct and complete Riper program');
                     print globalDirectory
                     print cuadruples
+                    for cuadruple in cuadruples:
+                        print cuadruple
         except EOFError:
             print(EOFError)
     else:
