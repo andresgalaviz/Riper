@@ -27,7 +27,7 @@ def GenerateCuadruple():
             global temporal
             temporal = temporal + 1
             cuadruples.append([op, operand1, operand2, (result, ('Temporal', temporal))])
-            operandStack.append((result, '')) #Second position would be the temporal name?
+            operandStack.append((result, ('Temporal', temporal))) #Second position would be the temporal name?
         else:
             cuadruples.append([op, operand1, None, operand2])
     else:
