@@ -441,6 +441,7 @@ def p_inputPar(p):
 def p_error(p):
     print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
 
+
 def GenerateCuadruple():
     op = operatorStack.pop()
     operand2 = operandStack.pop()
