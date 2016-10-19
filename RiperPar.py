@@ -22,10 +22,6 @@ localDirectory = {}
 global expCount
 expCount = 0;
 
-
-global correctProgram
-correctProgram = True
-
 opMap = {
         'int'       : 0,
         'float'     : 1,
@@ -73,16 +69,16 @@ def p_vars(p):
     if (len(p) > 1):
         global localDirectory
         if (p[2] in localDirectory or p[2] in globalDirectory):
+            print("Line num: %d" % (p.lineno))
             print("ERROR, variable ", p[2], " has already been declared")
-            global correctProgram
-            correctProgram = False
+            sys.exit()
         else:
             localDirectory[p[2]] = [currentType]
             operandStack.append((currentType, p[2]))
             operatorStack.append(p[3])
             GenerateCuadruple()
             
-            #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
+            
 
 # Grammar rule used when more than one variable is declared
 def p_moreVar(p):
@@ -91,15 +87,15 @@ def p_moreVar(p):
     if (len(p) > 1):
         global localDirectory
         if (p[2] in localDirectory or p[2] in globalDirectory):
+            print("Line num: %d" % (p.lineno))
             print("ERROR, variable ", p[2], " has already been declared")
-            global correctProgram
-            correctProgram = False
+            sys.exit()
         else:
             localDirectory[p[2]] = [currentType]
             operandStack.append((currentType, p[2]))
             operatorStack.append(p[3])
             GenerateCuadruple()
-            #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
+            
   
 
 # Grammar rulle used to match to one of the basic variable type declaration tokens
@@ -121,9 +117,9 @@ def p_array(p):
     if (len(p) > 1):
         global expCount
         if (int(p[4][1]) != expCount):
+            print("Line num: %d" % (p.lineno))
             print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
-            global correctProgram
-            correctProgram = False
+            sys.exit()
         expCount = 0;
 
 def p_moreExp(p):
@@ -145,9 +141,9 @@ def p_nextArray(p):
     '''nextArray :  ',' ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
     global expCount
     if (int(p[4][1]) != expCount):
+        print("Line num: %d" % (p.lineno))
         print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
-        global correctProgram
-        correctProgram = False
+        sys.exit()
     expCount = 0;
   
 
@@ -241,17 +237,20 @@ def p_assign(p):
     if (len(p) > 1):
         global localDirectory
         global globalDirectory
-        if (p[1] not in localDirectory):
-            if (p[1] not in globalDirectory):
+        variableTuple = localDirectory[p[1]]
+        if (not variableTuple):
+            variableTuple = globalDirectory[p[1]]
+            if (not variableTuple):
+                print("Line num: %d" % (p.lineno))
                 print("ERROR, variable ", p[1], " has not been declared")
-                global correctProgram
-                correctProgram = False
+                
+                sys.exit()
+                sys.exit()
 
         # Continue here
-        # localDirectory[p[2]] = [currentType]
-        # operandStack.append((currentType, p[2]))
-        # operatorStack.append(p[3])
-        # GenerateCuadruple()
+        operandStack.append((variableTuple[0], p[1]))
+        operatorStack.append(p[3])
+        GenerateCuadruple()
 
 def p_possibleArray(p):
     '''possibleArray : '[' exp ']'
@@ -418,9 +417,9 @@ def p_data(p):
         global globalDirectory
         if (p[1] not in localDirectory):
             if (p[1] not in globalDirectory):
+                print("Line num: %d" % (p.lineno))
                 print("ERROR, variable ", p[1], " has not been declared")
-                global correctProgram
-                correctProgram = False
+                sys.exit()
     p[0] = p[1]
     print("PUSHING OPERAND ", p[1])  
     operandStack.append(p[1])
@@ -457,6 +456,7 @@ def p_inputPar(p):
 
 def p_error(p):
     print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
+    sys.exit()
 
   # Build the parser
 RiperParser = yacc.yacc()
@@ -467,12 +467,11 @@ if __name__ == '__main__':
             f = open(file,'r')
             data = f.read()
             f.close()
-            if (RiperParser.parse(data, debug = False, tracking=True)):
-                if(correctProgram):
-                    print('This is a correct and complete Riper program');
-                    print(globalDirectory)
-                    for cuadruple in cuadruples:
-                        print(cuadruple)
+            RiperParser.parse(data, debug = False, tracking=True)
+            print('This is a correct and complete Riper program');
+            print(globalDirectory)
+            for cuadruple in cuadruples:
+                print(cuadruple)
         except EOFError:
             print(EOFError)
     else:
