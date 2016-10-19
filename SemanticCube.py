@@ -8,7 +8,10 @@ operMap = {
             '-'         : 1,
             '*'         : 2,
             '/'         : 3,
-            '%'         : 4}
+            '%'         : 4,
+            '<'         : 5,
+            '>'         : 6,
+            '<='        : }
 
 semanticCube = {}
 # Return -1 if not possible
@@ -34,4 +37,4 @@ semanticCube[1,4,0] = 0
 semanticCube[2,0,2] = 2
 
 def SearchSemantic(operandOne, operator, operandTwo):
-    return semanticCube[operMap[operandOne], operMap[operator], operMap[operandTwo]];
+    return semanticCube[operandOne[0], operMap[operator], operandTwo[0]];

@@ -22,8 +22,7 @@ localDirectory = {}
 global expCount
 expCount = 0;
 
-global expQueue
-expQueue = []
+
 global correctProgram
 correctProgram = True
 
@@ -286,25 +285,28 @@ def p_doWhile(p):
   
 
 def p_expression(p):
-    '''expression : higherExp possibleHigherExp'''
-    if (len(p) > 1):
-        del expQueue[:]
+    '''expression : higherExp1 possibleHigherExp1'''
   
 
-def p_possibleHigherExp(p):
-    '''possibleHigherExp : possibleHigherExpOp higherExp
+def p_possibleHigherExp1(p):
+    '''possibleHigherExp1 : OR higherExp1 possibleHigherExp1
         | '''
   
 
-def p_possibleHigherExpOp(p):
-    '''possibleHigherExpOp : AND
-        | OR '''
-    if (len(p) > 1):
-        expQueue.append(p[1])
 
 
-def p_higherExp(p):
-    '''higherExp : exp possibleExp'''
+def p_higherExp1(p):
+    '''higherExp1 : higherExp2 possibleHigherExp2'''
+
+
+
+def p_possibleHigherExp2(p):
+    '''possibleHigherExp2 : AND higherExp2 possibleHigherExp2
+        | '''
+
+
+def p_higherExp2(p):
+    '''higherExp2 : exp possibleExp'''
 
 
 def p_possibleExp(p):
@@ -319,11 +321,13 @@ def p_possibleExpOp(p):
         | GREATEREQUAL
         | DIFFERENT
         | EQUALTO '''
-    if (len(p) > 1):
-        expQueue.append(p[1])
+
   
 def p_exp(p):
     '''exp : possibleSign term possibleTerms'''
+    if (len(operatorStack) > 0 and operatorStack[-1] in ['<', '>', '<=', '>=', '!=', '==']):
+        print "TOP " + operatorStack[-1] + ", GENERATING"
+        GenerateCuadruple()
   
 
 def p_possibleTerms(p):
@@ -338,20 +342,20 @@ def p_possibleSign(p):
 def p_possibleTermOp(p):
     '''possibleTermOp : '+'
         | '-' '''
-    if (len(p) > 1):
-        expQueue.append(p[1])
+    print "PUSHING +-"
+    operatorStack.append(p[1])
 
 
 def p_term(p):
     '''term : factor possibleFactors'''
-    print p[1] + p[2]
+    if (len(operatorStack) > 0 and operatorStack[-1] in ['+', '-']):
+        print "TOP +-, GENERATING"
+        GenerateCuadruple()
   
 
 def p_possibleFactors(p):
     '''possibleFactors : possibleFactorOp factor possibleFactors
         | '''
-    if (len(p) == 4):
-        p[0] = p[1] + p[2] + p[3]
     if (len(p) == 1):
         p[0] = ''
 
@@ -360,9 +364,8 @@ def p_possibleFactorOp(p):
         | '/'
         | '%' '''
     p[0] = p[1]
-    if (len(p) > 1):
-        expQueue.append(p[1])
-    #PUSH OPERATOR KEYCODE TO operatorStack    
+    print "PUSHHING */"
+    operatorStack.append(p[1])   
 
   
   
@@ -372,23 +375,19 @@ def p_factor(p):
         | data'''
     if (len(p) == 2):
         p[0] = p[1]
-    if (operatorStack[-1] in ['*', '/', '%']):
-        op = operatorStack.pop()
-        operand2 = operandStack.pop()
-        operand1 = operandStack.pop()
-        #CHECK SEMANTIC FOR operand1 op operand2, right now operand1 and operand2 are tuples, where first element is the keycode type
-
+        if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
+            print "TOP */, GENERATING"
+            GenerateCuadruple()
 
 
 def p_lPar(p):
     '''lPar : '(' '''
-    if (len(p) > 1):
-        expQueue.append(p[1])
+    print "PUSH ("
+    operatorStack.append(p[1])
 
 def p_rPar(p):
     '''rPar : ')' '''
-    if (len(p) > 1):
-        expQueue.append(p[1])
+    print operatorStack.pop()
 
   
 
@@ -405,6 +404,7 @@ def p_data(p):
                 global correctProgram
                 correctProgram = False
     p[0] = p[1]
+    print "PUSHING TO OPERAND"
     operandStack.append(p[1])
 
 
@@ -441,6 +441,18 @@ def p_inputPar(p):
 def p_error(p):
     print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
 
+def GenerateCuadruple():
+    op = operatorStack.pop()
+    operand2 = operandStack.pop()
+    operand1 = operandStack.pop()
+    result = SemanticCube.SearchSemantic(operand1, op, operand2)
+    if (result != -1):
+        cuadruples.append([op, operand1, operand2, (result, '')])
+        operandStack.append((result, '')) #Second position would be the temporal name?
+    else:
+        print "ERROR, type mismatch"
+
+
   # Build the parser
 RiperParser = yacc.yacc()
 if __name__ == '__main__':
@@ -454,6 +466,7 @@ if __name__ == '__main__':
                 if(correctProgram):
                     print ('This is a correct and complete Riper program');
                     print globalDirectory
+                    print cuadruples
         except EOFError:
             print(EOFError)
     else:
