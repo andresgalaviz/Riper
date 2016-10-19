@@ -19,8 +19,6 @@ reserved = {
     'while' : 'WHILE',
     'do' : 'DO',
     'return' : 'RETURN',
-    'true' : 'TRUE',
-    'false' : 'FALSE',
     'global' : 'GLOBAL'
 }
 
@@ -36,6 +34,7 @@ tokens = ['ID',
           'GREATEREQUAL',
           'FLOAT',
           'INT',
+          'BOOL',
           'STRING'] + list(reserved.values())
 
 literals = ['=', '+', '-', '*', '/', '{', '}', '(', ')', '[', ']', ':', ',', ';', '%']
@@ -51,10 +50,16 @@ t_GREATEREQUAL = r'>='
 t_AND = r'&&'
 t_OR = r'\|\|'
 
+def t_BOOL(t):
+    r'(true|false)'
+    t.value = (3, t.value)
+    return t
+
 def t_STRING(t):
     r"'([^\\']+|\\'|\\\\)*'"  # I think this is right ...
     t.value = (4, t.value)
     return t
+
 # Lookup in case of reserved words
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -68,9 +73,9 @@ def t_FLOAT(t):
 
 def t_INT(t):
     r'(-)?[0-9]+'
-    
     t.value = (0, int(t.value))
     return t
+
 
     
 # Define a rule so we can track line numbers

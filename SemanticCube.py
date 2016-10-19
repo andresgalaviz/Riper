@@ -11,7 +11,10 @@ operMap = {
             '%'         : 4,
             '<'         : 5,
             '>'         : 6,
-            '<='        : }
+            '<='        : 7,
+            '>='        : 8,
+            '=='        : 9,
+            '='         : 8}
 
 semanticCube = {}
 # Return -1 if not possible
