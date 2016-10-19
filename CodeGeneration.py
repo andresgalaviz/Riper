@@ -13,6 +13,7 @@ invOpMap = {
          2: 'string',
          3: 'bool',  
 }
+temporal = 1
 def GenerateCuadruple():
     op = operatorStack.pop()
     operand2 = operandStack.pop()
@@ -23,7 +24,9 @@ def GenerateCuadruple():
     if (result != -1):
         
         if(op != '='):
-            cuadruples.append([op, operand1, operand2, (result, '')])
+            global temporal
+            temporal = temporal + 1
+            cuadruples.append([op, operand1, operand2, (result, ('Temporal', temporal))])
             operandStack.append((result, '')) #Second position would be the temporal name?
         else:
             cuadruples.append([op, operand1, None, operand2])
