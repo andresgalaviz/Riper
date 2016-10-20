@@ -5,7 +5,7 @@
 import ply.yacc as yacc
 import sys
 import RiperLex
-import SemanticCube
+from CodeGeneration import * 
 
 # import the lexical tokens
 tokens = RiperLex.tokens
@@ -17,23 +17,17 @@ globalDirectory = {}
 # Local variable directory
 global localDirectory
 localDirectory = {}
-
+debugParser = False
 #Counter of expressions in arrays
 global expCount
 expCount = 0;
 
-
-global correctProgram
-correctProgram = True
-
-global operandStack
-operandStack = []
-global operatorStack
-operatorStack = []
-
-global cuadruples
-cuadruples = []
-
+opMap = {
+        'int'       : 0,
+        'float'     : 1,
+        'string'    : 2,
+        'bool'      : 3
+}
 
 # Global Riper code structure
 def p_program(p):
@@ -75,13 +69,15 @@ def p_vars(p):
     if (len(p) > 1):
         global localDirectory
         if (p[2] in localDirectory or p[2] in globalDirectory):
-            print "ERROR, variable ", p[2], " has already been declared"
-            global correctProgram
-            correctProgram = False
+            print("ERROR, variable ", p[2], " has already been declared")
+            sys.exit()
         else:
-            localDirectory[p[2]] = [currentType]
-            #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
-
+            localDirectory[p[2]] = currentType
+            operandStack.append((currentType, p[2]))
+            operatorStack.append(p[3])
+            GenerateCuadruple()
+            
+            
 
 # Grammar rule used when more than one variable is declared
 def p_moreVar(p):
@@ -90,12 +86,14 @@ def p_moreVar(p):
     if (len(p) > 1):
         global localDirectory
         if (p[2] in localDirectory or p[2] in globalDirectory):
-            print "ERROR, variable ", p[2], " has already been declared"
-            global correctProgram
-            correctProgram = False
+            print("ERROR, variable ", p[2], " has already been declared")
+            sys.exit()
         else:
-            localDirectory[p[2]] = [currentType]
-            #NEED TO CHECK IF TYPE AND THE VALUE ARE EQUAL FOR ASSIGN
+            localDirectory[p[2]] = currentType
+            operandStack.append((currentType, p[2]))
+            operatorStack.append(p[3])
+            GenerateCuadruple()
+            
   
 
 # Grammar rulle used to match to one of the basic variable type declaration tokens
@@ -106,7 +104,7 @@ def p_type(p):
             | BOOLTYPE '''
     if (len(p) > 1):
         global currentType
-        currentType = p[1]
+        currentType = opMap[p[1]]
 
 # 
 def p_arrays(p):
@@ -117,9 +115,8 @@ def p_array(p):
     if (len(p) > 1):
         global expCount
         if (int(p[4][1]) != expCount):
-            print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
-            global correctProgram
-            correctProgram = False
+            print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
+            sys.exit()
         expCount = 0;
 
 def p_moreExp(p):
@@ -141,9 +138,8 @@ def p_nextArray(p):
     '''nextArray :  ',' ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
     global expCount
     if (int(p[4][1]) != expCount):
-        print "ERROR, the size of array ", p[2], " is different from the amount of contents declared"
-        global correctProgram
-        correctProgram = False
+        print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
+        sys.exit()
     expCount = 0;
   
 
@@ -186,7 +182,7 @@ def p_par(p):
         | '''
     if (len(p) > 1):
         global localDirectory
-        localDirectory[p[2]] = [currentType]
+        localDirectory[p[2]] = currentType
   
 
 def p_morePar(p):
@@ -194,7 +190,7 @@ def p_morePar(p):
         | '''
     if (len(p) > 1):
         global localDirectory
-        localDirectory[p[2]] = [currentType]
+        localDirectory[p[2]] = currentType
   
 
 def p_funcCall(p):
@@ -237,11 +233,17 @@ def p_assign(p):
     if (len(p) > 1):
         global localDirectory
         global globalDirectory
-        if (p[1] not in localDirectory):
-            if (p[1] not in globalDirectory):
-                print "ERROR, variable ", p[1], " has not been declared"
-                global correctProgram
-                correctProgram = False
+        matchedDataType = localDirectory.get(p[1])
+        if (matchedDataType is None):
+            matchedDataType = globalDirectory.get(p[1])
+            if (matchedDataType is None):
+                print("ERROR, variable ", p[1], " has not been declared")
+                sys.exit()
+        
+        # Continue here
+        operandStack.append((matchedDataType, p[1]))
+        operatorStack.append(p[3])
+        GenerateCuadruple()
 
 def p_possibleArray(p):
     '''possibleArray : '[' exp ']'
@@ -326,7 +328,8 @@ def p_possibleExpOp(p):
 def p_exp(p):
     '''exp : possibleSign term possibleTerms'''
     if (len(operatorStack) > 0 and operatorStack[-1] in ['<', '>', '<=', '>=', '!=', '==']):
-        print "TOP " + operatorStack[-1] + ", GENERATING"
+        if(debugParser):
+            print("TOP " + operatorStack[-1] + ", GENERATING")
         GenerateCuadruple()
   
 
@@ -348,14 +351,16 @@ def p_possibleSign(p):
 def p_possibleTermOp(p):
     '''possibleTermOp : '+'
         | '-' '''
-    print "PUSHING", p[1]
+    if(debugParser):
+        print("PUSHING", p[1])
     operatorStack.append(p[1])
 
 
 def p_term(p):
     '''term : factor possibleFactors'''
     if (len(operatorStack) > 0 and operatorStack[-1] in ['+', '-']):
-        print "TOP +-, GENERATING"
+        if(debugParser):
+            print("TOP +-, GENERATING")
         GenerateCuadruple()
   
 
@@ -372,7 +377,8 @@ def p_possibleFactorOp(p):
     if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
         GenerateCuadruple()
     p[0] = p[1]
-    print "PUSHING ", p[1]
+    if(debugParser):
+        print("PUSHING ", p[1])
     operatorStack.append(p[1])   
 
   
@@ -384,18 +390,22 @@ def p_factor(p):
     if (len(p) == 2):
         p[0] = p[1]
         if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
-            print "TOP GENERATING ", operatorStack[-1]
+            if(debugParser):
+                print("TOP GENERATING ", operatorStack[-1])
             GenerateCuadruple()
 
 
 def p_lPar(p):
     '''lPar : '(' '''
-    print "PUSH ("
+    if(debugParser):
+        print("PUSH (")
     operatorStack.append(p[1])
 
 def p_rPar(p):
     '''rPar : ')' '''
-    print operatorStack.pop()
+    if(debugParser):
+        print("PUSH (")
+    operatorStack.pop()
 
   
 
@@ -406,14 +416,22 @@ def p_data(p):
     if (len(p) == 3):
         global localDirectory
         global globalDirectory
-        if (p[1] not in localDirectory):
-            if (p[1] not in globalDirectory):
-                print "ERROR, variable ", p[1], " has not been declared"
-                global correctProgram
-                correctProgram = False
+        matchedDataType = localDirectory.get(p[1])
+        
+        if (matchedDataType is None):
+            matchedDataType = globalDirectory.get(p[1])
+            if (matchedDataType is None):
+                print("ERROR, variable ", p[1], " has not been declared")
+                sys.exit()
+        variableTuple = (matchedDataType, p[1])
+        
+    else:
+        variableTuple = p[1]
+        
     p[0] = p[1]
-    print "PUSHING OPERAND ", p[1]  
-    operandStack.append(p[1])
+    if(debugParser):
+        print("PUSHING OPERAND ", variableTuple)  
+    operandStack.append(variableTuple)
 
 
 def p_possibleIdCall(p):
@@ -430,12 +448,15 @@ def p_constant(p):
         | FLOAT
         | BOOL
         | STRING'''
+    
     p[0] = p[1]
 
 
 def p_input(p):
     '''input : INPUT '(' inputPar ')' '''  
-    p[0] = ('INPUT', p[3])
+    # TODO: This should not be hardcoded?
+    p[0] = (0, 'INPUT')
+    
 
 def p_inputPar(p):
     '''inputPar : STRING 
@@ -447,20 +468,7 @@ def p_inputPar(p):
 
 def p_error(p):
     print('Syntax error in line %d token %s with value %s' % (p.lineno, p.type, p.value))
-
-
-def GenerateCuadruple():
-    op = operatorStack.pop()
-    operand2 = operandStack.pop()
-    operand1 = operandStack.pop()
-    print operand1, op, operand2
-    result = SemanticCube.SearchSemantic(operand1, op, operand2)
-    if (result != -1):
-        cuadruples.append([op, operand1, operand2, (result, '')])
-        operandStack.append((result, '')) #Second position would be the temporal name?
-    else:
-        print "ERROR, type mismatch"
-
+    sys.exit()
 
   # Build the parser
 RiperParser = yacc.yacc()
@@ -471,13 +479,11 @@ if __name__ == '__main__':
             f = open(file,'r')
             data = f.read()
             f.close()
-            if (RiperParser.parse(data, debug = False, tracking=True)):
-                if(correctProgram):
-                    print ('This is a correct and complete Riper program');
-                    print globalDirectory
-                    print cuadruples
-                    for cuadruple in cuadruples:
-                        print cuadruple
+            RiperParser.parse(data, debug = False, tracking=True)
+            print('This is a correct and complete Riper program');
+            print(globalDirectory)
+            for cuadruple in cuadruples:
+                print(cuadruple)
         except EOFError:
             print(EOFError)
     else:
