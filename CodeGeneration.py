@@ -13,12 +13,11 @@ invOpMap = {
          2: 'string',
          3: 'bool',  
 }
-temporal = 1
+temporal = 0
 def GenerateCuadruple():
     op = operatorStack.pop()
     operand2 = operandStack.pop()
     operand1 = operandStack.pop()
-    print(op, operand2, operand1)
     result = SemanticCube.SearchSemanticCube(op, operand1[0], operand2[0])
 
     if (result != -1):
