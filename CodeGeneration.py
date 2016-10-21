@@ -5,6 +5,11 @@ operandStack = []
 global operatorStack
 operatorStack = []
 
+global conditionalCountStack
+conditionalCountStack = []
+global jumpStack
+jumpStack = []
+
 global cuadruples
 cuadruples = []
 invOpMap = {
@@ -32,3 +37,38 @@ def GenerateCuadruple():
     else:
         print("Error: Cannot %s (%s, %s)" % (op, invOpMap[operand1[0]], invOpMap[operand2[0]]))
         sys.exit()
+
+
+def GenerateOutputCuadruple():
+    cuadruples.append(['console', None, None, operandStack.pop()])
+
+
+def AppendConditionalCountStack():
+    conditionalCountStack.append(0)
+
+
+def GenerateGotofCuadruple():
+    operand = operandStack.pop()
+    if (operand[0] != 3):
+        print("Error: Conditionals only evaluate bool, not %s" % (invOpMap[operand[0]]))
+        sys.exit()
+    else:
+        jumpStack.append(len(cuadruples))
+        cuadruples.append(['GotoF', operand, None, None])
+        conditionalCountStack[-1] += 1
+
+
+def CompleteCuadruple(x):
+    cuadruples[jumpStack.pop()][3] = len(cuadruples) + x
+
+
+def GenerateGotoCuadruple():
+    jumpStack.append(len(cuadruples))
+    cuadruples.append(['Goto', None, None, None])
+
+
+def CompleteGotoCuadruples():
+    while(conditionalCountStack[-1] > 0):
+        CompleteCuadruple(0)
+        conditionalCountStack[-1] -= 1
+    conditionalCountStack.pop()

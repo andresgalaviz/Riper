@@ -17,7 +17,7 @@ globalDirectory = {}
 # Local variable directory
 global localDirectory
 localDirectory = {}
-debugParser = False
+debugParser = True
 #Counter of expressions in arrays
 global expCount
 expCount = 0;
@@ -251,21 +251,61 @@ def p_possibleArray(p):
   
 
 def p_conditional(p):
-    '''conditional : IF '(' expression ')' '{' block '}' possibleElif possibleElse '''
-  
+    '''conditional : IF appendConditionalCountStack '(' gotofExpression ')' '{' block '}' possibleElif possibleElse completeGotoCuadruples '''
+
+
+def p_appendConditionalCountStack(p):
+    '''appendConditionalCountStack : '''
+    AppendConditionalCountStack()
+
+
+def p_gotofExpression(p):
+    '''gotofExpression : expression '''
+    GenerateGotofCuadruple()
+
 
 def p_possibleElif(p):
-    '''possibleElif : ELIF '(' expression ')' '{' block '}' possibleElif
+    '''possibleElif : ELIF '(' completeCuadruplePlus1 generateGoto gotofExpression ')' '{' block '}' possibleElif
         | '''
-  
+
+
+def p_completeCuadruple(p):
+    '''completeCuadruple : '''
+    CompleteCuadruple(0)
+
+
+def p_completeCuadruplePlus1(p):
+    ''' completeCuadruplePlus1 : '''
+    CompleteCuadruple(1)
+
+
+def p_completeGotoCuadruples(p):
+    '''completeGotoCuadruples : '''
+    CompleteGotoCuadruples()
+
 
 def p_possibleElse(p):
-    '''possibleElse : ELSE '{' block '}' 
+    '''possibleElse : ELSE completeCuadruplePlus1 generateGoto '{' block '}' 
         | '''
-  
+
+
+def p_generateGoto(p):
+    '''generateGoto : '''
+    GenerateGotoCuadruple()
+
 
 def p_output(p):
-    '''output : CONSOLE '(' expression ')' ';' '''
+    '''output : CONSOLE '(' outputExpression possibleOutputExpressions ')' ';' '''
+
+
+def p_outputExpression(p):
+    '''outputExpression : expression '''
+    GenerateOutputCuadruple()
+
+
+def p_possibleOutputExpressions(p):
+    '''possibleOutputExpressions : ',' outputExpression possibleOutputExpressions
+    | '''
   
 
 def p_loop(p):
@@ -291,30 +331,49 @@ def p_expression(p):
   
 
 def p_possibleHigherExp1(p):
-    '''possibleHigherExp1 : OR higherExp1 possibleHigherExp1
+    '''possibleHigherExp1 : operatorOR higherExp1 possibleHigherExp1
         | '''
+
+
+def p_operatorOR(p):
+    '''operatorOR : OR '''
+    if(debugParser):
+        print("PUSH ||")
+    operatorStack.append(p[1])
   
-
-
 
 def p_higherExp1(p):
     '''higherExp1 : higherExp2 possibleHigherExp2'''
-
+    if (len(operatorStack) > 0 and operatorStack[-1] == '||'):
+        if(debugParser):
+            print("TOP " + operatorStack[-1] + ", GENERATING")
+        GenerateCuadruple()
 
 
 def p_possibleHigherExp2(p):
-    '''possibleHigherExp2 : AND higherExp2 possibleHigherExp2
+    '''possibleHigherExp2 : operatorAND higherExp2 possibleHigherExp2
         | '''
+
+
+def p_operatorAND(p):
+    '''operatorAND : AND '''
+    if(debugParser):
+        print("PUSH &&")
+    operatorStack.append(p[1])
 
 
 def p_higherExp2(p):
     '''higherExp2 : exp possibleExp'''
+    if (len(operatorStack) > 0 and operatorStack[-1] == '&&'):
+        if(debugParser):
+            print("TOP " + operatorStack[-1] + ", GENERATING")
+        GenerateCuadruple()
 
 
 def p_possibleExp(p):
     '''possibleExp : possibleExpOp exp
         | '''
-  
+    
 
 def p_possibleExpOp(p):
     '''possibleExpOp : LESS
@@ -323,6 +382,9 @@ def p_possibleExpOp(p):
         | GREATEREQUAL
         | DIFFERENT
         | EQUALTO '''
+    if(debugParser):
+        print("PUSHING", p[1])
+    operatorStack.append(p[1])
 
   
 def p_exp(p):
@@ -374,8 +436,6 @@ def p_possibleFactorOp(p):
     '''possibleFactorOp : '*'
         | '/'
         | '%' '''
-    if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
-        GenerateCuadruple()
     p[0] = p[1]
     if(debugParser):
         print("PUSHING ", p[1])
@@ -404,8 +464,10 @@ def p_lPar(p):
 def p_rPar(p):
     '''rPar : ')' '''
     if(debugParser):
-        print("PUSH (")
+        print("POP (")
     operatorStack.pop()
+    if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
+        GenerateCuadruple()
 
   
 
@@ -482,8 +544,10 @@ if __name__ == '__main__':
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
             print(globalDirectory)
+            cuadrupleNumber = 0;
             for cuadruple in cuadruples:
-                print(cuadruple)
+                print("%s \t %s" % (cuadrupleNumber, cuadruple))
+                cuadrupleNumber += 1
         except EOFError:
             print(EOFError)
     else:

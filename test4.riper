@@ -4,7 +4,7 @@ function int isTrue(bool val) {
 }
 main() {
     int varFloat5 = 10000;
-    while((1500 > 1500)  < isTrue(true)) {
+    while((1500 > 1500)  && isTrue(true)) {
         varFloat5 = 11111111;
         varFloat5 = 1111+1111;
     }

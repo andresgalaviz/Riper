@@ -2,5 +2,48 @@
 
 
 main() {
-  int x = 4;
+  if(3 > 10 || 4 - -(5 + 3 / 2) > 5 && true){
+    console('Nothing');
+  }
+  if(true) {
+    if(true){
+      if(false){
+        string last = 'last';
+      }
+      else{
+        if(true){
+          string lest = 'lest';
+        }
+      }
+      string k = 'k';
+    }
+    elif(true){
+      string a = 'a';
+    }
+    else{
+      if(true){
+        string was = 'was';
+      }
+      elif(true){
+        string wes = 'wes';
+      }
+    }
+  }
+  elif(3 > 5) {
+    if(true){
+      string wis = 'wis';
+    }
+    else {
+      string wos = 'wos';
+    }
+  }
+  elif(9 > 10) {
+    string c = 'c';
+  }
+  elif(10 > 11) {
+    string e = 'e';
+  }
+  else{
+    string d = 'd';
+  }
 }
