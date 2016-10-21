@@ -17,7 +17,7 @@ globalDirectory = {}
 # Local variable directory
 global localDirectory
 localDirectory = {}
-debugParser = True
+debugParser = False
 #Counter of expressions in arrays
 global expCount
 expCount = 0;
@@ -319,12 +319,32 @@ def p_for(p):
   
 
 def p_while(p):
-    '''while : WHILE '(' expression ')' '{' loopBlock '}' '''
+    '''while : WHILE '(' appendJump expression gotofWhileExpression ')' '{' loopBlock completeCuadruplePlus1 gotoJump '}' '''
+
+
+def p_gotofWhileExpression(p):
+    '''gotofWhileExpression : '''
+    GotofWhileExpression()
+
+
+def p_gotoJump(p):
+    '''gotoJump : '''
+    GotoJump()
   
 
 def p_doWhile(p):
-    '''doWhile : DO '{' loopBlock '}' WHILE '(' expression ')' ';' '''
-  
+    '''doWhile : DO appendJump '{' loopBlock '}' WHILE '(' gototExpression ')' ';' '''
+
+
+def p_appendJump(p):
+    '''appendJump : '''
+    AppendJump()
+
+
+def p_gototExpression(p):
+    '''gototExpression : expression '''
+    GenerateGototCuadruple()
+
 
 def p_expression(p):
     '''expression : higherExp1 possibleHigherExp1'''

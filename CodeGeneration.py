@@ -12,6 +12,8 @@ jumpStack = []
 
 global cuadruples
 cuadruples = []
+
+#Operand aritmetic
 invOpMap = {
          0: 'int',   
          1: 'float', 
@@ -39,10 +41,12 @@ def GenerateCuadruple():
         sys.exit()
 
 
+#COnsole output
 def GenerateOutputCuadruple():
     cuadruples.append(['console', None, None, operandStack.pop()])
 
 
+#If conditional
 def AppendConditionalCountStack():
     conditionalCountStack.append(0)
 
@@ -72,3 +76,32 @@ def CompleteGotoCuadruples():
         CompleteCuadruple(0)
         conditionalCountStack[-1] -= 1
     conditionalCountStack.pop()
+
+
+#DoWhile
+def AppendJump():
+    jumpStack.append(len(cuadruples))
+
+
+def GenerateGototCuadruple():
+    operand = operandStack.pop()
+    if (operand[0] != 3):
+        print("Error: Conditionals only evaluate bool, not %s" % (invOpMap[operand[0]]))
+        sys.exit()
+    else:
+        cuadruples.append(['GotoT', operand, None, jumpStack.pop()])
+
+
+#While
+def GotofWhileExpression():
+    operand = operandStack.pop()
+    if (operand[0] != 3):
+        print("Error: Conditionals only evaluate bool, not %s" % (invOpMap[operand[0]]))
+        sys.exit()
+    else:
+        jumpStack.append(len(cuadruples))
+        cuadruples.append(['GotoF', operand, None, None])
+
+
+def GotoJump():
+    cuadruples.append(['Goto', None, None, jumpStack.pop()])
