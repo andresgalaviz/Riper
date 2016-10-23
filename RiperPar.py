@@ -26,7 +26,8 @@ opMap = {
         'int'       : 0,
         'float'     : 1,
         'string'    : 2,
-        'bool'      : 3
+        'bool'      : 3,
+        'void'      : 4
 }
 
 # Global Riper code structure
@@ -148,7 +149,7 @@ def p_function(p):
   if (len(p) > 1):
     global localDirectory
     global currentFuncType
-    globalDirectory[p[3]] = [currentFuncType]
+    globalDirectory[p[3]] = currentFuncType
     localDirectory = {}
   
 
@@ -160,7 +161,7 @@ def p_funcType(p):
         | VOID '''
     if (len(p) > 1):
         global currentFuncType
-        currentFuncType = p[1]
+        currentFuncType = opMap[p[1]]
   
 
 def p_returnType(p):
@@ -251,7 +252,7 @@ def p_possibleArray(p):
   
 
 def p_conditional(p):
-    '''conditional : IF appendConditionalCountStack '(' gotofExpression ')' '{' block '}' possibleElif possibleElse completeGotoCuadruples '''
+    '''conditional : IF appendConditionalCountStack '(' gotofIfExpression ')' '{' block '}' possibleElif possibleElse completeGotoCuadruples '''
 
 
 def p_appendConditionalCountStack(p):
@@ -259,24 +260,20 @@ def p_appendConditionalCountStack(p):
     AppendConditionalCountStack()
 
 
-def p_gotofExpression(p):
-    '''gotofExpression : expression '''
+def p_gotofIfExpression(p):
+    '''gotofIfExpression : expression '''
+    IncreaseConsitionalCountStack()
     GenerateGotofCuadruple()
 
 
 def p_possibleElif(p):
-    '''possibleElif : ELIF '(' completeCuadruplePlus1 generateGoto gotofExpression ')' '{' block '}' possibleElif
+    '''possibleElif : ELIF '(' completeCuadruplePlus1 generateGoto gotofIfExpression ')' '{' block '}' possibleElif
         | '''
-
-
-def p_completeCuadruple(p):
-    '''completeCuadruple : '''
-    CompleteCuadruple(0)
 
 
 def p_completeCuadruplePlus1(p):
     ''' completeCuadruplePlus1 : '''
-    CompleteCuadruple(1)
+    CompleteCuadruple(-1, 1)
 
 
 def p_completeGotoCuadruples(p):
@@ -315,8 +312,28 @@ def p_loop(p):
   
 
 def p_for(p):
-    '''for : FOR '('  expression ';' assign ')' '{' loopBlock '}' '''
-  
+    '''for : FOR '(' appendJump gotofForExpression generateGoto ';' appendJump assign gotoJumpMinus4 ')' '{' completeCuadrupleJumpMinus2 loopBlock gotoJump completeCuadruple '}' '''
+
+
+def p_completeCuadruple(p):
+    '''completeCuadruple : '''
+    CompleteCuadruple(-1, 0)
+
+
+def p_gotofForExpression(p):
+    '''gotofForExpression : expression'''
+    GenerateGotofCuadruple()
+
+
+def p_gotoJumpMinus4(p):
+    '''gotoJumpMinus4 : '''
+    GotoJump(-4)
+
+
+def p_completeCuadrupleJumpMinus2(p):
+    '''completeCuadrupleJumpMinus2 : '''
+    CompleteCuadruple(-2, 0)
+
 
 def p_while(p):
     '''while : WHILE '(' appendJump expression gotofWhileExpression ')' '{' loopBlock completeCuadruplePlus1 gotoJump '}' '''
@@ -324,12 +341,12 @@ def p_while(p):
 
 def p_gotofWhileExpression(p):
     '''gotofWhileExpression : '''
-    GotofWhileExpression()
+    GenerateGotofCuadruple()
 
 
 def p_gotoJump(p):
     '''gotoJump : '''
-    GotoJump()
+    GotoJump(-1)
   
 
 def p_doWhile(p):
@@ -506,6 +523,7 @@ def p_data(p):
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
         variableTuple = (matchedDataType, p[1])
+
         
     else:
         variableTuple = p[1]
