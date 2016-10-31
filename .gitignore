@@ -1,0 +1,5 @@
+*.pyc
+parsetab.py
+.DS_Store
+.vscode
+*.out
