@@ -4,7 +4,7 @@ function bool isTrue(bool val) {
     int i = 1 + 1;
     int j = 1 + 1;
     isTrue(true);
-    return  val;
+    return val;
 }
 
 main() {

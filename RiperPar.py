@@ -9,6 +9,7 @@ import RiperLex
 from CodeGeneration import *
 import Settings
 from time import time
+from VirtualMachine import *
 
 
 # import the lexical tokens
@@ -640,14 +641,13 @@ if __name__ == '__main__':
             f.close()
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
-            print(globalDirectory)
-            print globalMemoryMap
+            Execute(globalMemoryMap, globalDirectory, quadruples, constantDirectory)
+
             quadrupleNumber = 0;
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
                 quadrupleNumber += 1
-            print constantDirectory
-            print globalDirectory
+
         except EOFError:
             print(EOFError)
     else:
