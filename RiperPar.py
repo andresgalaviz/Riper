@@ -134,6 +134,7 @@ def p_nextArray(p):
 
 def p_function(p):
   '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
+  print memoryMap[1]
   global localDirectory
   localDirectory = {}
   global insideFunction
@@ -162,8 +163,7 @@ def p_idStartFunction(p):
     
     global currentFuncType
     global insideFunction
-    globalDirectory[p[1]] = (currentFuncType, Settings.memoryMap[insideFunction][0][currentFuncType], jumpStack.pop())
-    Settings.memoryMap[insideFunction][0][currentFuncType] = Settings.memoryMap[insideFunction][0][currentFuncType] + 1
+    globalDirectory[p[1]] = (currentFuncType, jumpStack.pop(), None)
     
     insideFunction = 1
     
@@ -641,6 +641,7 @@ if __name__ == '__main__':
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
             print(globalDirectory)
+            print globalMemoryMap
             quadrupleNumber = 0;
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
