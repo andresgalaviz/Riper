@@ -3,12 +3,16 @@ int num = --10 + 10 + -(4*5)/-2 - 10 + 10.1;
 function bool isTrue(bool val) {
     int i = 1 + 1;
     int j = 1 + 1;
+    isTrue(true);
     return  val;
 }
+
 main() {
     int varFloat5 = 10000;
     while((1500 > 1500)  && isTrue(true)) {
         varFloat5 = 11111111;
         varFloat5 = 1111+111;
+        isTrue(true);
+
     }
 }
