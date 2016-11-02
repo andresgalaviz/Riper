@@ -1,0 +1,15 @@
+int num = --10 + 10 + -(4*5)/-2 - 10 + 10.1; 
+
+
+function int fib(int num) {
+    if(num <= 1) {
+        return 1;
+    }
+    
+    return fib(num ) + fib(num );
+}
+
+main() {
+    int num2 = fib(5);
+
+}
