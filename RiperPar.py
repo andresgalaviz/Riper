@@ -4,36 +4,21 @@
 
 import ply.yacc as yacc
 import sys
+import copy
 import RiperLex
-from CodeGeneration import * 
+from CodeGeneration import *
+import Settings
+from time import time
+
 
 # import the lexical tokens
 tokens = RiperLex.tokens
-
-# Global function and variable directory
-global globalDirectory
-globalDirectory = {}
-
-# Local variable directory
-global localDirectory
-localDirectory = {}
-debugParser = False
-#Counter of expressions in arrays
-global expCount
-expCount = 0;
-
-opMap = {
-        'int'       : 0,
-        'float'     : 1,
-        'string'    : 2,
-        'bool'      : 3
-}
 
 # Global Riper code structure
 def p_program(p):
     '''program : globalVarDeclar functionDeclar main'''
     p[0] = 'OK'  
-
+    GenerateEndProcQuadruple()
 
 # Global variable declaration section
 def p_globalVarDeclar(p):
@@ -72,10 +57,14 @@ def p_vars(p):
             print("ERROR, variable ", p[2], " has already been declared")
             sys.exit()
         else:
-            localDirectory[p[2]] = currentType
-            operandStack.append((currentType, p[2]))
+            
+            localDirectory[p[2]] = (currentType, memoryMap[insideFunction][0][currentType])
+            operandStack.append((currentType, memoryMap[insideFunction][0][currentType]
+            
+            ))
             operatorStack.append(p[3])
-            GenerateCuadruple()
+            GenerateExpQuadruple()
+            memoryMap[insideFunction][0][currentType] = memoryMap[insideFunction][0][currentType] + 1
             
             
 
@@ -89,11 +78,11 @@ def p_moreVar(p):
             print("ERROR, variable ", p[2], " has already been declared")
             sys.exit()
         else:
-            localDirectory[p[2]] = currentType
-            operandStack.append((currentType, p[2]))
+            localDirectory[p[2]] = (currentType, memoryMap[insideFunction][0][currentType])
+            operandStack.append((currentType, memoryMap[insideFunction][0][currentType]))
             operatorStack.append(p[3])
-            GenerateCuadruple()
-            
+            GenerateExpQuadruple()
+            memoryMap[insideFunction][0][currentType] = memoryMap[insideFunction][0][currentType] + 1
   
 
 # Grammar rulle used to match to one of the basic variable type declaration tokens
@@ -144,11 +133,12 @@ def p_nextArray(p):
   
 
 def p_function(p):
-  '''function : FUNCTION funcType ID '(' par ')' '{' block RETURN returnType ';' '}' '''
+  '''function : FUNCTION funcType ID startFunction '(' par ')' '{' block RETURN returnType ';' '}' '''
   if (len(p) > 1):
     global localDirectory
     global currentFuncType
-    globalDirectory[p[3]] = [currentFuncType]
+    globalDirectory[p[3]] = (currentFuncType, memoryMap[insideFunction][0][currentFuncType])
+    memoryMap[insideFunction][0][currentFuncType] = memoryMap[insideFunction][0][currentFuncType] + 1
     localDirectory = {}
   
 
@@ -160,8 +150,17 @@ def p_funcType(p):
         | VOID '''
     if (len(p) > 1):
         global currentFuncType
-        currentFuncType = p[1]
+        currentFuncType = opMap[p[1]]
   
+def p_startFunction(p):
+    '''startFunction : '''
+    insideFunction = 1
+    print Settings.memoryMap
+    
+    Settings.memoryMap[1] = copy.deepcopy(resetMemoryMap)
+    
+    if(debugParser):
+        print("Resetting memoryMap")
 
 def p_returnType(p):
     '''returnType : expression
@@ -169,7 +168,7 @@ def p_returnType(p):
   
 
 def p_main(p):
-    '''main : MAIN '(' par ')' '{' block '}' '''
+    '''main : MAIN startFunction '(' par ')' '{' block '}' '''
     if (len(p) > 1):
         global localDirectory
         if (len(localDirectory) > 0):
@@ -178,19 +177,22 @@ def p_main(p):
   
 
 def p_par(p):
-    '''par : type ID morePar
+    '''par : type ID morePar 
         | '''
     if (len(p) > 1):
         global localDirectory
-        localDirectory[p[2]] = currentType
-  
+        localDirectory[p[2]] = (currentType, memoryMap[insideFunction][0][currentType])
+        memoryMap[insideFunction][0][currentType] = memoryMap[insideFunction][0][currentType] + 1
 
 def p_morePar(p):
     '''morePar : ',' type ID morePar
         | '''
     if (len(p) > 1):
         global localDirectory
-        localDirectory[p[2]] = currentType
+        global currentType
+
+        localDirectory[p[2]] = (currentType, memoryMap[insideFunction][0][currentType])
+        memoryMap[insideFunction][0][currentType] = memoryMap[insideFunction][0][currentType] + 1
   
 
 def p_funcCall(p):
@@ -241,9 +243,10 @@ def p_assign(p):
                 sys.exit()
         
         # Continue here
-        operandStack.append((matchedDataType, p[1]))
+        
+        operandStack.append(matchedDataType)
         operatorStack.append(p[3])
-        GenerateCuadruple()
+        GenerateExpQuadruple()
 
 def p_possibleArray(p):
     '''possibleArray : '[' exp ']'
@@ -251,21 +254,57 @@ def p_possibleArray(p):
   
 
 def p_conditional(p):
-    '''conditional : IF '(' expression ')' '{' block '}' possibleElif possibleElse '''
-  
+    '''conditional : IF appendConditionalCountStack '(' gotofIfExpression ')' '{' block '}' possibleElif possibleElse completeGotoQuadruples '''
+
+
+def p_appendConditionalCountStack(p):
+    '''appendConditionalCountStack : '''
+    AppendConditionalCountStack()
+
+
+def p_gotofIfExpression(p):
+    '''gotofIfExpression : expression '''
+    IncreaseConsitionalCountStack()
+    GenerateGotofQuadruple()
+
 
 def p_possibleElif(p):
-    '''possibleElif : ELIF '(' expression ')' '{' block '}' possibleElif
+    '''possibleElif : ELIF '(' completeQuadruplePlus1 generateGoto gotofIfExpression ')' '{' block '}' possibleElif
         | '''
-  
+
+
+def p_completeQuadruplePlus1(p):
+    ''' completeQuadruplePlus1 : '''
+    CompleteQuadruple(-1, 1)
+
+
+def p_completeGotoQuadruples(p):
+    '''completeGotoQuadruples : '''
+    CompleteGotoQuadruples()
+
 
 def p_possibleElse(p):
-    '''possibleElse : ELSE '{' block '}' 
+    '''possibleElse : ELSE completeQuadruplePlus1 generateGoto '{' block '}' 
         | '''
-  
+
+
+def p_generateGoto(p):
+    '''generateGoto : '''
+    GenerateGotoQuadruple()
+
 
 def p_output(p):
-    '''output : CONSOLE '(' expression ')' ';' '''
+    '''output : CONSOLE '(' outputExpression possibleOutputExpressions ')' ';' '''
+
+
+def p_outputExpression(p):
+    '''outputExpression : expression '''
+    GenerateOutputQuadruple()
+
+
+def p_possibleOutputExpressions(p):
+    '''possibleOutputExpressions : ',' outputExpression possibleOutputExpressions
+    | '''
   
 
 def p_loop(p):
@@ -275,46 +314,105 @@ def p_loop(p):
   
 
 def p_for(p):
-    '''for : FOR '('  expression ';' assign ')' '{' loopBlock '}' '''
-  
+    '''for : FOR '(' appendJump gotofForExpression generateGoto ';' appendJump assign gotoJumpMinus4 ')' '{' completeQuadrupleJumpMinus2 loopBlock gotoJump completeQuadruple '}' '''
+
+
+def p_completeQuadruple(p):
+    '''completeQuadruple : '''
+    CompleteQuadruple(-1, 0)
+
+
+def p_gotofForExpression(p):
+    '''gotofForExpression : expression'''
+    GenerateGotofQuadruple()
+
+
+def p_gotoJumpMinus4(p):
+    '''gotoJumpMinus4 : '''
+    GotoJump(-4)
+
+
+def p_completeQuadrupleJumpMinus2(p):
+    '''completeQuadrupleJumpMinus2 : '''
+    CompleteQuadruple(-2, 0)
+
 
 def p_while(p):
-    '''while : WHILE '(' expression ')' '{' loopBlock '}' '''
+    '''while : WHILE '(' appendJump expression gotofWhileExpression ')' '{' loopBlock completeQuadruplePlus1 gotoJump '}' '''
+
+
+def p_gotofWhileExpression(p):
+    '''gotofWhileExpression : '''
+    GenerateGotofQuadruple()
+
+
+def p_gotoJump(p):
+    '''gotoJump : '''
+    GotoJump(-1)
   
 
 def p_doWhile(p):
-    '''doWhile : DO '{' loopBlock '}' WHILE '(' expression ')' ';' '''
-  
+    '''doWhile : DO appendJump '{' loopBlock '}' WHILE '(' gototExpression ')' ';' '''
+
+
+def p_appendJump(p):
+    '''appendJump : '''
+    AppendJump()
+
+
+def p_gototExpression(p):
+    '''gototExpression : expression '''
+    GenerateGototQuadruple()
+
 
 def p_expression(p):
     '''expression : higherExp1 possibleHigherExp1'''
   
 
 def p_possibleHigherExp1(p):
-    '''possibleHigherExp1 : OR higherExp1 possibleHigherExp1
+    '''possibleHigherExp1 : operatorOR higherExp1 possibleHigherExp1
         | '''
+
+
+def p_operatorOR(p):
+    '''operatorOR : OR '''
+    if(debugParser):
+        print("PUSH ||")
+    operatorStack.append(p[1])
   
-
-
 
 def p_higherExp1(p):
     '''higherExp1 : higherExp2 possibleHigherExp2'''
-
+    if (len(operatorStack) > 0 and operatorStack[-1] == '||'):
+        if(debugParser):
+            print("TOP " + operatorStack[-1] + ", GENERATING")
+        GenerateExpQuadruple()
 
 
 def p_possibleHigherExp2(p):
-    '''possibleHigherExp2 : AND higherExp2 possibleHigherExp2
+    '''possibleHigherExp2 : operatorAND higherExp2 possibleHigherExp2
         | '''
+
+
+def p_operatorAND(p):
+    '''operatorAND : AND '''
+    if(debugParser):
+        print("PUSH &&")
+    operatorStack.append(p[1])
 
 
 def p_higherExp2(p):
     '''higherExp2 : exp possibleExp'''
+    if (len(operatorStack) > 0 and operatorStack[-1] == '&&'):
+        if(debugParser):
+            print("TOP " + operatorStack[-1] + ", GENERATING")
+        GenerateExpQuadruple()
 
 
 def p_possibleExp(p):
     '''possibleExp : possibleExpOp exp
         | '''
-  
+    
 
 def p_possibleExpOp(p):
     '''possibleExpOp : LESS
@@ -323,6 +421,9 @@ def p_possibleExpOp(p):
         | GREATEREQUAL
         | DIFFERENT
         | EQUALTO '''
+    if(debugParser):
+        print("PUSHING", p[1])
+    operatorStack.append(p[1])
 
   
 def p_exp(p):
@@ -330,7 +431,7 @@ def p_exp(p):
     if (len(operatorStack) > 0 and operatorStack[-1] in ['<', '>', '<=', '>=', '!=', '==']):
         if(debugParser):
             print("TOP " + operatorStack[-1] + ", GENERATING")
-        GenerateCuadruple()
+        GenerateExpQuadruple()
   
 
 def p_possibleTerms(p):
@@ -344,9 +445,9 @@ def p_possibleSign(p):
     if(len(p) > 1):
         operatorStack.append('*')
         if(p[1] == '-'):
-            operandStack.append((0, -1))
+            operandStack.append((0, constantDirectory[-1]))
         else:
-            operandStack.append((0, 1))
+            operandStack.append((0, constantDirectory[1]))
 
 def p_possibleTermOp(p):
     '''possibleTermOp : '+'
@@ -361,7 +462,7 @@ def p_term(p):
     if (len(operatorStack) > 0 and operatorStack[-1] in ['+', '-']):
         if(debugParser):
             print("TOP +-, GENERATING")
-        GenerateCuadruple()
+        GenerateExpQuadruple()
   
 
 def p_possibleFactors(p):
@@ -374,8 +475,6 @@ def p_possibleFactorOp(p):
     '''possibleFactorOp : '*'
         | '/'
         | '%' '''
-    if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
-        GenerateCuadruple()
     p[0] = p[1]
     if(debugParser):
         print("PUSHING ", p[1])
@@ -392,7 +491,7 @@ def p_factor(p):
         if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
             if(debugParser):
                 print("TOP GENERATING ", operatorStack[-1])
-            GenerateCuadruple()
+            GenerateExpQuadruple()
 
 
 def p_lPar(p):
@@ -404,8 +503,10 @@ def p_lPar(p):
 def p_rPar(p):
     '''rPar : ')' '''
     if(debugParser):
-        print("PUSH (")
+        print("POP (")
     operatorStack.pop()
+    if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
+        GenerateExpQuadruple()
 
   
 
@@ -416,19 +517,22 @@ def p_data(p):
     if (len(p) == 3):
         global localDirectory
         global globalDirectory
-        matchedDataType = localDirectory.get(p[1])
+        matchedID = localDirectory.get(p[1])
         
-        if (matchedDataType is None):
-            matchedDataType = globalDirectory.get(p[1])
-            if (matchedDataType is None):
+        if (matchedID is None):
+            matchedID = globalDirectory.get(p[1])
+            if (matchedID is None):
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
-        variableTuple = (matchedDataType, p[1])
+        
+        variableTuple = matchedID
         
     else:
-        variableTuple = p[1]
         
+        variableTuple = p[1]
+    
     p[0] = p[1]
+
     if(debugParser):
         print("PUSHING OPERAND ", variableTuple)  
     operandStack.append(variableTuple)
@@ -441,7 +545,7 @@ def p_possibleIdCall(p):
     if(len(p) == 4):
         p[0] = p[2]
     else:
-        p[0] = ''
+        p[0] = None
 
 def p_constant(p):
     '''constant : INT
@@ -449,7 +553,12 @@ def p_constant(p):
         | BOOL
         | STRING'''
     
-    p[0] = p[1]
+    (constType, constValue) = p[1]
+    if(constValue not in constantDirectory):
+        constantDirectory[constValue] = globalMemoryMap[1][constType]
+        globalMemoryMap[1][constType] = globalMemoryMap[1][constType] + 1
+    p[0] = (constType, constantDirectory[constValue])
+    
 
 
 def p_input(p):
@@ -482,8 +591,11 @@ if __name__ == '__main__':
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
             print(globalDirectory)
-            for cuadruple in cuadruples:
-                print(cuadruple)
+            quadrupleNumber = 0;
+            for quadruple in quadruples:
+                print("%s \t %s" % (quadrupleNumber, quadruple))
+                quadrupleNumber += 1
+            print constantDirectory
         except EOFError:
             print(EOFError)
     else:
