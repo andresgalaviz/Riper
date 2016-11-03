@@ -9,6 +9,7 @@ import RiperLex
 from CodeGeneration import *
 import Settings
 from time import time
+from VirtualMachine import *
 
 
 # import the lexical tokens
@@ -58,10 +59,8 @@ def p_vars(p):
             sys.exit()
         else:
             
-            localDirectory[p[2]] = (currentType, memoryMap[insideFunction][0][currentType])
-            operandStack.append((currentType, memoryMap[insideFunction][0][currentType]
-            
-            ))
+            localDirectory[p[2]] = [0, currentType, memoryMap[insideFunction][0][currentType]]
+            operandStack.append((currentType, memoryMap[insideFunction][0][currentType]))
             operatorStack.append(p[3])
             GenerateExpQuadruple()
             memoryMap[insideFunction][0][currentType] = memoryMap[insideFunction][0][currentType] + 1
@@ -75,10 +74,12 @@ def p_moreVar(p):
     if (len(p) > 1):
         global localDirectory
         if (p[2] in localDirectory or p[2] in globalDirectory):
-            print("ERROR, variable ", p[2], " has already been declared")
-            sys.exit()
+            global insideFunction
+            if(insideFunction or globalDirectory[p[2]][0] == 1):
+                print("ERROR, variable ", p[2], " has already been declared")
+                sys.exit()
         else:
-            localDirectory[p[2]] = (currentType, memoryMap[insideFunction][0][currentType])
+            localDirectory[p[2]] = [0, currentType, memoryMap[insideFunction][0][currentType]]
             operandStack.append((currentType, memoryMap[insideFunction][0][currentType]))
             operatorStack.append(p[3])
             GenerateExpQuadruple()
@@ -134,6 +135,10 @@ def p_nextArray(p):
 
 def p_function(p):
   '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
+  
+  globalDirectory[p[3]][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
+                              [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
+  
   global localDirectory
   localDirectory = {}
   global insideFunction
@@ -162,10 +167,9 @@ def p_idStartFunction(p):
     
     global currentFuncType
     global insideFunction
-    globalDirectory[p[1]] = (currentFuncType, Settings.memoryMap[insideFunction][0][currentFuncType], jumpStack.pop())
-    Settings.memoryMap[insideFunction][0][currentFuncType] = Settings.memoryMap[insideFunction][0][currentFuncType] + 1
-    
+    globalDirectory[p[1]] = [currentFuncType, jumpStack.pop(), None]
     insideFunction = 1
+    p[0] = p[1]
     
 
 def p_returnType(p):
@@ -177,7 +181,8 @@ def p_main(p):
     if (len(p) > 1):
         global localDirectory
         if (len(localDirectory) > 0):
-            globalDirectory['main'] = localDirectory
+            globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
+                                          [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
             localDirectory = {}
 
 def p_startMainFunction(p):
@@ -194,6 +199,7 @@ def p_startMainFunction(p):
 # Empty production used to complete the first GOTO quadruple to main function
 def p_completeMainQuadruple(p):
     '''completeMainQuadruple : '''
+    globalDirectory['main'] = [-1, len(quadruples), None]
     CompleteQuadruple(0, 0)
 
 def p_par(p):
@@ -501,7 +507,7 @@ def p_possibleSign(p):
 def p_possibleTermOp(p):
     '''possibleTermOp : '+'
         | '-' '''
-    print "SUM"
+    
     if(debugParser):
         print("PUSHING", p[1])
     operatorStack.append(p[1])
@@ -640,13 +646,13 @@ if __name__ == '__main__':
             f.close()
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
-            print(globalDirectory)
+            Execute(globalMemoryMap, globalDirectory, quadruples, constantDirectory)
+
             quadrupleNumber = 0;
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
                 quadrupleNumber += 1
-            print constantDirectory
-            print globalDirectory
+
         except EOFError:
             print(EOFError)
     else:
