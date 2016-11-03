@@ -8,6 +8,7 @@ def GenerateExpQuadruple():
     op = operatorStack.pop()
     operand2 = operandStack.pop()
     operand1 = operandStack.pop()
+    
     result = SemanticCube.SearchSemanticCube(op, operand1[0], operand2[0])
     if (result != -1):
         if(op != '='):
@@ -39,6 +40,7 @@ def IncreaseConsitionalCountStack():
 
 #generates empty GotoF, appends position to jumpStack
 def GenerateGotofQuadruple():
+    
     operand = operandStack.pop()
     
     if (operand[0] != 3):
@@ -65,9 +67,9 @@ def GenerateGotoQuadruple():
     quadruples.append(['Goto', None, None, None])
 
 
-#completes info of the cuadruple in position jumpPos of the jumpStack
-def CompleteQuadruple(jumpPos, cuadruplePos):
-    quadruples[jumpStack.pop(jumpPos)][3] = len(quadruples) + cuadruplePos
+#completes info of the quadruple in position jumpPos of the jumpStack
+def CompleteQuadruple(jumpPos, quadruplePos):
+    quadruples[jumpStack.pop(jumpPos)][3] = len(quadruples) + quadruplePos
 
 
 #in conditionals, completes all the empty Goto from the elifs pending
@@ -78,7 +80,7 @@ def CompleteGotoQuadruples():
     conditionalCountStack.pop()
 
 
-#adds current cuadruple position to the jumpStack
+#adds current quadruple position to the jumpStack
 def AppendJump():
     jumpStack.append(len(quadruples))
 
@@ -87,5 +89,20 @@ def AppendJump():
 def GotoJump(jumpPos):
     quadruples.append(['Goto', None, None, jumpStack.pop(jumpPos)])
 
+# Generates the parameters into function quadruples
+def GenerateParInQuadruple(parnum):
+    operand = operandStack.pop()
+    quadruples.append(['PARAMETER', operand, None, parnum])
+
+def GenerateFuncCallQuadruples(functionName, functionSignatue):
+    quadruples.append(['ERA', None, None, functionSignatue[1]])
+    quadruples.append(['GOSUB', None, None, functionSignatue[2]])
+
+# Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
+def GenerateReturnProcQuadruple():
+    operand = operandStack.pop()
+    quadruples.append(['RETURN', None, None, operand])
+
+# Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateEndProcQuadruple():
     quadruples.append(['RIP', None, None, None])
