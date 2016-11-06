@@ -25,7 +25,7 @@ def GenerateExpQuadruple():
 
 #Console output
 def GenerateOutputQuadruple():
-    quadruples.append(['console', None, None, operandStack.pop()])
+    quadruples.append(['console', None, None, operandStack.pop()[1]])
 
 
 #Conditional and loops
@@ -66,6 +66,11 @@ def GenerateGotoQuadruple():
     jumpStack.append(len(quadruples))
     quadruples.append(['Goto', None, None, None])
 
+#generates empty Goto, appends position to jumpStack
+def GenerateGotoMainQuadruple():
+    jumpStack.append(len(quadruples))
+    quadruples.append(['GotoMain', None, None, None])
+
 
 #completes info of the quadruple in position jumpPos of the jumpStack
 def CompleteQuadruple(jumpPos, quadruplePos):
@@ -95,8 +100,9 @@ def GenerateParInQuadruple(parnum):
     quadruples.append(['PARAMETER', operand, None, parnum])
 
 def GenerateFuncCallQuadruples(functionName, functionSignatue):
-    quadruples.append(['ERA', None, None, functionSignatue[1]])
-    quadruples.append(['GOSUB', None, None, functionSignatue[2]])
+    quadruples.append(['ERA', None, None, functionSignatue[2]])
+    quadruples.append(['GOSUB', None, None, functionSignatue[1]])
+    operandStack
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateReturnProcQuadruple():

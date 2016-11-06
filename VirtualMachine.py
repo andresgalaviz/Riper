@@ -1,37 +1,85 @@
-import Memory
+from Memory import *
+import operator
 
-def Execute(globalMemoryMap, globalDirectory, quadruples, cons):
-    constantDirectory = {}
-    for a,b in cons.items():
-        constantDirectory[b] = a
+global ops
+ops = {
+    "+" : operator.add,
+    "-" : operator.sub,
+    "*" : operator.mul,
+    "/" : operator.div,
+    "%" : operator.mod,
+    "&&" : operator.and_,
+    "||" : operator.or_,
+    "==": operator.eq,
+    "!=": operator.ne,
+    "<": operator.lt,
+    "<=": operator.le,
+    ">": operator.gt,
+    ">=": operator.ge
+}
+
+
+def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory):
+    print("\nEXECUTING CODE\n")
 
     memoryStack = []
     currentQuadruple = 0
 
-    print constantDirectory
     print(globalDirectory)
-    print globalMemoryMap
-    #globalRequiredMemory = {'int' : globalMemoryMap[0][0] - 1000, 'intTempt' : globalMemoryMap[1][0] - 3700, 
-    #                        'float' : globalMemoryMap[0][1] - 5000, 'floatTemp' : globalMemoryMap[1][1] - 7700, 
-    #                        'string' : globalMemoryMap[0][2] - 9000, 'stringTemp' : globalMemoryMap[1][2] - 11700, 
-    #                        'bool' : globalMemoryMap[0][3] - 13000, 'boolTemp' : globalMemoryMap[1][3] - 15700}
+    #Initialize global memory required     
+    globalMemoryMap.append(globalTemporals)
+    programMemory = Memory(globalMemoryMap)
 
-    #GALABLITZ MANDARA GLOBALREQURIEDMEMORY CON TODO
-    #Initialize global memory required
-    globalMemory = Memory(globalRequiredMemory)
-    #Initialize main function memory required
-    mainMemory = Memory(globalDirectory['main'].THE_MEMORY_VARIABLE_COUNTS)
+    #Assign the constant values to the memory
+    programMemory.assignConstants(constantDirectory)
 
     #Iterate through the quadruples
+    print("\nSTART EXECUTION\n")
     while quadruples[currentQuadruple][0] != 'RIP':
         quadruple = quadruples[currentQuadruple]
 
-        #Goto
-        if (quadruple[0] == 'Goto'):
+        #GotoMain
+        if (quadruple[0] == 'GotoMain'):
+            #Initialize main function memory required to programMemory
+            programMemory.assignMainMemory(globalDirectory['main'][2:4])
             currentQuadruple = quadruple[3]
 
-        #Arithmetic operators
-        #Addition
-        elif (quadruple[0] == '+'):
+        #Goto
+        elif (quadruple[0] == 'Goto'):
+            currentQuadruple = quadruple[3]
+
+        #GotoF
+        elif (quadruple[0] == 'GotoF'):
+            if(not programMemory.getValueFromAddress(quadruple[1])):
+                currentQuadruple = quadruple[3]
+            else:
+                currentQuadruple += 1
+
+        #GotoT
+        elif (quadruple[0] == 'GotoT'):
+            if(programMemory.getValueFromAddress(quadruple[1])):
+                currentQuadruple = quadruple[3]
+            else:
+                currentQuadruple += 1
+
+        #Console
+        elif (quadruple[0] == 'console'):
+            print programMemory.getValueFromAddress(quadruple[3])
+            currentQuadruple += 1
+
+        #Arithmetic
+        elif (quadruple[0] in ['+', '-', '*', '/', '%', '<', '<=', '>', '>=', '==', '!=', '&&', '||']):
+            programMemory.assignValueToAddress(ops[quadruple[0]](programMemory.getValueFromAddress(quadruple[1]), programMemory.getValueFromAddress(quadruple[2])), quadruple[3])
+            currentQuadruple += 1
+
+        elif(quadruple[0] == '='):
+            programMemory.assignValueToAddress(programMemory.getValueFromAddress(quadruple[1]), quadruple[3])
+            currentQuadruple += 1
             
+            
+            
+    print("\nFINISHED EXECUTION\n")
+    print programMemory.memory
+
+
 
