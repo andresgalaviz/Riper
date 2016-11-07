@@ -30,6 +30,10 @@ class Memory:
         return self.memory[(virtualAddress - 1000) / 1000 % 4][(virtualAddress - 1000) / 4000][virtualAddress % 1000]
 
     def assignValueToAddress(self, result, virtualAddress):
+        if (virtualAddress < 5000):
+            result = int(result)
+        elif (virtualAddress < 9000):
+            result = float(result)
         self.memory[(virtualAddress - 1000) / 1000 % 4][(virtualAddress - 1000) / 4000][virtualAddress % 1000] = result
 
             

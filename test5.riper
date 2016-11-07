@@ -26,4 +26,6 @@ main() {
         console('While i < 10', i);
         i = i + 1;
     }
+    console('concatenation of the words: ', 'Foo', 'Bar', 'Foo' + 'Bar');
+
 }
