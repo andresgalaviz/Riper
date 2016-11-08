@@ -57,7 +57,7 @@ def t_BOOL(t):
 
 def t_STRING(t):
     r"'([^\\']+|\\'|\\\\)*'"  # I think this is right ...
-    t.value = (2, t.value)
+    t.value = (2, t.value[1:-1])
     return t
 
 # Lookup in case of reserved words

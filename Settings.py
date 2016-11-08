@@ -28,14 +28,14 @@ baseMemoryMap = {
 #        [1][0] ConstantInt, [1][1] ConstantFloat, [1][2] ConstantStrings, [1][3] ConstantBools (I think we don't need strings and bools)
 
 globalMemoryMap = [[1000, 5000, 9000, 13000], 
-                   [3700, 7700, 11700, 15700]]
+                   [4000, 8000, 12000, 16000]]
 
 # Local variables and temporals
 # Order: [0][0] LocalInt, [0][1] LocalFloat, [0][2] LocalStrings, [0][3] LocalBools
 #        [1][0] TemporalInt, [1][1] TemporalFloat, [1][2] TemporalStrings, [1][3] TemporalBools 
 
-localMemoryMap = [[1900, 5900, 9900, 13900],
-                  [2800, 6800, 10800, 14800]]
+localMemoryMap = [[2000, 6000, 10000, 14000],
+                  [3000, 7000, 11000, 15000]]
 
 resetMemoryMap = copy.deepcopy(localMemoryMap)
 
@@ -48,6 +48,10 @@ constantDirectory[1] = globalMemoryMap[1][0]
 globalMemoryMap[1][0] = globalMemoryMap[1][0] + 1
 constantDirectory[-1] = globalMemoryMap[1][0]
 globalMemoryMap[1][0] = globalMemoryMap[1][0] + 1
+constantDirectory['true'] = globalMemoryMap[1][3]
+globalMemoryMap[1][3] = globalMemoryMap[1][3] + 1
+constantDirectory['false'] = globalMemoryMap[1][3]
+globalMemoryMap[1][3] = globalMemoryMap[1][3] + 1
 
 memoryMap = [globalMemoryMap, localMemoryMap]
 global insideFunction

@@ -14,12 +14,15 @@ from VirtualMachine import *
 
 # import the lexical tokens
 tokens = RiperLex.tokens
-GenerateGotoQuadruple()
 # Global Riper code structure
 def p_program(p):
-    '''program : globalVarDeclar functionDeclar main'''
+    '''program : globalVarDeclar generateGotoMain functionDeclar main'''
     p[0] = 'OK'  
     GenerateEndProcQuadruple()
+
+def p_generateGotoMain(p):
+    '''generateGotoMain : '''
+    GenerateGotoMainQuadruple()
 
 # Global variable declaration section
 def p_globalVarDeclar(p):
@@ -30,6 +33,8 @@ def p_globalVarDeclar(p):
         if (len(localDirectory) > 0):
             globalDirectory = localDirectory.copy()
             localDirectory = {}
+        global globalTemporals 
+        globalTemporals = memoryMap[1][1]
 
 
 # Variable initialization section
@@ -58,7 +63,6 @@ def p_vars(p):
             print("ERROR, variable ", p[2], " has already been declared")
             sys.exit()
         else:
-            
             localDirectory[p[2]] = [0, currentType, memoryMap[insideFunction][0][currentType]]
             operandStack.append((currentType, memoryMap[insideFunction][0][currentType]))
             operatorStack.append(p[3])
@@ -190,6 +194,7 @@ def p_startMainFunction(p):
     global localDirectory
     localDirectory = {}
     jumpStack.append(len(quadruples))
+    global insideFunction
     insideFunction = 1
     Settings.memoryMap[1] = copy.deepcopy(resetMemoryMap)
     
@@ -207,7 +212,7 @@ def p_par(p):
         | '''
     if (len(p) > 1):
         global localDirectory
-        localDirectory[p[2]] = (currentType, Settings.memoryMap[insideFunction][0][currentType])
+        localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction][0][currentType])
         Settings.memoryMap[insideFunction][0][currentType] = Settings.memoryMap[insideFunction][0][currentType] + 1
 
 def p_morePar(p):
@@ -217,7 +222,7 @@ def p_morePar(p):
         global localDirectory
         global currentType
 
-        localDirectory[p[2]] = (currentType, Settings.memoryMap[insideFunction][0][currentType])
+        localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction][0][currentType])
         Settings.memoryMap[insideFunction][0][currentType] = Settings.memoryMap[insideFunction][0][currentType] + 1
   
 
@@ -296,6 +301,10 @@ def p_assign(p):
             if (matchedDataType is None):
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
+            else:
+                matchedDataType = (matchedDataType[1], matchedDataType[2])
+        else:
+            matchedDataType = (matchedDataType[1], matchedDataType[2])
         
         # Continue here
         
@@ -507,7 +516,6 @@ def p_possibleSign(p):
 def p_possibleTermOp(p):
     '''possibleTermOp : '+'
         | '-' '''
-    
     if(debugParser):
         print("PUSHING", p[1])
     operatorStack.append(p[1])
@@ -576,18 +584,19 @@ def p_data(p):
         global localDirectory
         global globalDirectory
         variableTuple = localDirectory.get(p[1])
-
         if (variableTuple is None):
             variableTuple = globalDirectory.get(p[1])
             if (variableTuple is None):
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
-        
+            else:
+                variableTuple = (variableTuple[1], variableTuple[2])
+        else:
+            variableTuple = (variableTuple[1], variableTuple[2])
     else: 
         variableTuple = p[1]
     
     # p[0] = p[1]
-
     if(debugParser):
         print("PUSHING OPERAND ", variableTuple)  
     operandStack.append(variableTuple)
@@ -646,12 +655,12 @@ if __name__ == '__main__':
             f.close()
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
-            Execute(globalMemoryMap, globalDirectory, quadruples, constantDirectory)
-
             quadrupleNumber = 0;
+            print globalDirectory
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
                 quadrupleNumber += 1
+            Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory)
 
         except EOFError:
             print(EOFError)

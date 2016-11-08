@@ -25,7 +25,7 @@ def GenerateExpQuadruple():
 
 #Console output
 def GenerateOutputQuadruple():
-    quadruples.append(['console', None, None, operandStack.pop()])
+    quadruples.append(['console', None, None, operandStack.pop()[1]])
 
 
 #Conditional and loops
@@ -65,6 +65,11 @@ def GenerateGototQuadruple():
 def GenerateGotoQuadruple():
     jumpStack.append(len(quadruples))
     quadruples.append(['Goto', None, None, None])
+
+#generates empty Goto, appends position to jumpStack
+def GenerateGotoMainQuadruple():
+    jumpStack.append(len(quadruples))
+    quadruples.append(['GotoMain', None, None, None])
 
 
 #completes info of the quadruple in position jumpPos of the jumpStack
