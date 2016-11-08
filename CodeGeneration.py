@@ -58,7 +58,7 @@ def GenerateGototQuadruple():
         print("Error: Conditionals only evaluate bool, not %s" % (invOpMap[operand[0]]))
         sys.exit()
     else:
-        quadruples.append(['GotoT', operand, None, jumpStack.pop()])
+        quadruples.append(['GotoT', operand[1], None, jumpStack.pop()])
 
 
 #generates empty Goto, appends position to jumpStack
