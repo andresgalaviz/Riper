@@ -14,12 +14,14 @@ from VirtualMachine import *
 
 # import the lexical tokens
 tokens = RiperLex.tokens
+
 # Global Riper code structure
 def p_program(p):
     '''program : globalVarDeclar generateGotoMain functionDeclar main'''
-    p[0] = 'OK'  
+    # This is a complete and correct program, generate the EndProc quadruple
     GenerateEndProcQuadruple()
 
+# Generates the first quadruple to the main function
 def p_generateGotoMain(p):
     '''generateGotoMain : '''
     GenerateGotoMainQuadruple()
@@ -178,7 +180,7 @@ def p_returnType(p):
     '''returnType : RETURN expression ';' '''
     GenerateReturnProcQuadruple()
 
-def p_main(p):
+def p_  (p):
     '''main : MAIN startMainFunction completeMainQuadruple '(' par ')' '{' blockMain '}' '''
     if (len(p) > 1):
         global localDirectory
