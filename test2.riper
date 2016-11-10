@@ -13,9 +13,11 @@ main() {
   for (init < 10; init = init + 3) {
     console('trying for');
     if (true){
+      i = 10;
       do{
-        console('doing');
-      } while(10 == 10);
+        console('doing 10 times');
+        i = i - 1;
+      } while(i > 0);
     }
     elif (10 > 12) {
       if(false){
