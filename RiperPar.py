@@ -100,10 +100,11 @@ def p_type(p):
         global currentType
         currentType = opMap[p[1]]
 
-# 
+# Used if more arrays are to be declared
 def p_arrays(p):
     '''arrays : array moreArray '''
 
+# Array grammar declaration
 def p_array(p):
     '''array : type ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
     if (len(p) > 1):
@@ -122,8 +123,6 @@ def p_sumExpCount(p):
     global expCount
     expCount += 1
 
-  
-
 def p_moreArray(p):
     '''moreArray : nextArray moreArray
         | '''
@@ -136,7 +135,6 @@ def p_nextArray(p):
         sys.exit()
     expCount = 0;
   
-
 def p_function(p):
   '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
   
@@ -208,55 +206,66 @@ def p_completeMainQuadruple(p):
     CompleteQuadruple(0, 0)
 
 def p_par(p):
-    '''par : type ID morePar 
+    '''par : typeID morePar 
         | '''
-    if (len(p) > 1):
-        global localDirectory
-        localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction][0][currentType])
-        Settings.memoryMap[insideFunction][0][currentType] = Settings.memoryMap[insideFunction][0][currentType] + 1
 
 def p_morePar(p):
-    '''morePar : ',' type ID morePar
+    '''morePar : ',' typeID morePar
         | '''
-    if (len(p) > 1):
-        global localDirectory
-        global currentType
 
-        localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction][0][currentType])
-        Settings.memoryMap[insideFunction][0][currentType] = Settings.memoryMap[insideFunction][0][currentType] + 1
-  
-
+def p_typeID(p):
+    '''typeID : type ID'''
+    global currentType
+    localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction][0][currentType])
+    
+    # Save in inside local variables
+    Settings.memoryMap[insideFunction][0][currentType] = Settings.memoryMap[insideFunction][0][currentType] + 1
 
 def p_funcCall(p):
-    '''funcCall : ID '(' parIn ')' '''
-    
-    global localDirectory
-    global globalDirectory
-    matchedID = localDirectory.get(p[1])
+    '''funcCall : ID verifyParameterStack '(' parIn ')' '''
 
+    global globalDirectory
+    global currentParameterList
+    global parameterList
+    # functype, funcStart, memoryNeeded
+    matchedID = globalDirectory.get(p[1])
     if (matchedID is None):
-        matchedID = globalDirectory.get(p[1])
-        if (matchedID is None):
-            print("ERROR, variable ", p[1], " has not been declared")
-            sys.exit()
-        
+        print("ERROR, variable ", p[1], " has not been declared")
+        sys.exit()
+    
     p[0] = matchedID 
+    print("Current parameter list: ", p[1], currentParameterList)
+    if(parameterList):
+        currentParameterList = parameterList.pop()
+        currentParameterList.append(("MY FUNCTION CALL", p[1]))
+    
     GenerateFuncCallQuadruples(p[1], matchedID)
 
+def p_verifyParameterStack(p):
+    '''verifyParameterStack : '''
+    global currentParameterList
+    if(currentParameterList):
+        parameterList.append(currentParameterList)
+        currentParameterList = []
+    
 def p_parIn(p):
-    '''parIn : expression moreParIn
+    '''parIn : parameter moreParIn
         | '''
-    # print p[1]
-    # if(len(p) > 2):
-    #     p[0] = list(p[1])
+
 
 def p_moreParIn(p):
-    '''moreParIn : ',' expression moreParIn 
+    '''moreParIn : ',' parameter moreParIn
         | '''
-    # print p
-    # if(len(p) > 2):
-        
-    # p[0] = list(p[2]).append(p[3])
+
+def p_parameter(p):
+    '''parameter : expression'''
+    global currentParameterList
+    global parameterList
+    parameter = operandStack.pop()
+    if(isinstance(parameter,tuple)):
+        currentParameterList.append(parameter)
+    else:
+        operandStack.pop()
 
 def p_block(p):
     '''block : varDeclar block
@@ -660,6 +669,7 @@ if __name__ == '__main__':
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
                 quadrupleNumber += 1
+            print(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory)
             Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory)
 
         except EOFError:

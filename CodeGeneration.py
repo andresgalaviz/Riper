@@ -100,9 +100,13 @@ def GenerateParInQuadruple(parnum):
     quadruples.append(['PARAMETER', operand, None, parnum])
 
 def GenerateFuncCallQuadruples(functionName, functionSignatue):
-    quadruples.append(['ERA', None, None, functionSignatue[2]])
+    
+    quadruples.append(['ERA', None, None, functionName])
     quadruples.append(['GOSUB', None, None, functionSignatue[1]])
-    operandStack
+    
+    operandStack.append((functionSignatue[0], Settings.memoryMap[1][1][functionSignatue[0]]))
+    Settings.memoryMap[1][1][functionSignatue[0]] = Settings.memoryMap[1][1][functionSignatue[0]] + 1
+    
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateReturnProcQuadruple():

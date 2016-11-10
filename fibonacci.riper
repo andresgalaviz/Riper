@@ -1,15 +1,17 @@
-int num = --10 + 10 + -(4*5)/-2 - 10 + 10.1; 
-
-
-function int fib(int num) {
-    if(num <= 1) {
-        return 1;
-    }
-    
-    return fib(num ) + fib(num );
+int x = 2 + 3 + 4 + 5;
+function int uno() {
+return 1;
+}
+function int dos() {
+return 2;
+}
+function int tres() {
+return 3;
+}
+function int fib(int num, int num5, int num4) {
+    return uno(2, dos(3,4,tres(5,6,7), 8),9);
 }
 
 main() {
-    int num2 = fib(5);
 
 }

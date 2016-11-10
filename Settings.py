@@ -84,3 +84,9 @@ jumpStack = []
 
 global quadruples
 quadruples = []
+
+global parameterList
+parameterList = []
+
+global currentParameterList
+currentParameterList = []
