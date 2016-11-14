@@ -139,16 +139,21 @@ def p_nextArray(p):
     expCount = 0;
   
 def p_function(p):
-  '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block returnType '}' '''
+  '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
   
   Settings.globalDirectory[p[3]][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
                               [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
-
-  GenerateEndProcQuadruple()
+  
   global localDirectory
-  localDirectory = {}
   global insideFunction
+
+  print("CodeGeneration.foundReturn", CodeGeneration.foundReturn)
+  if(CodeGeneration.currentFuncType < 4 and not CodeGeneration.foundReturn):
+      print("Function %s with type %s does not have a return value" %(insideFunction[1], invOpMap[CodeGeneration.currentFuncType]))
+      sys.exit()
+  GenerateEndProcQuadruple()
   insideFunction = [0, '']
+  localDirectory = {}
   
 
 def p_funcType(p):
@@ -173,8 +178,10 @@ def p_idStartFunction(p):
         print("Resetting memoryMap")
     
     global insideFunction
-    Settings.globalDirectory[p[1]] = [CodeGeneration.currentFuncType, jumpStack.pop(), None, memoryMap[0][0][CodeGeneration.currentFuncType], None]
-    memoryMap[0][0][CodeGeneration.currentFuncType] = memoryMap[0][0][CodeGeneration.currentFuncType] + 1
+    Settings.globalDirectory[p[1]] = [CodeGeneration.currentFuncType, jumpStack.pop(), None, None, None]
+    if(CodeGeneration.currentFuncType != 4):
+        Settings.globalDirectory[p[1]][3] = memoryMap[0][0][CodeGeneration.currentFuncType]
+        memoryMap[0][0][CodeGeneration.currentFuncType] = memoryMap[0][0][CodeGeneration.currentFuncType] + 1
     insideFunction = [1, p[1]]
     p[0] = p[1]
     
@@ -182,7 +189,7 @@ def p_idStartFunction(p):
 def p_returnType(p):
     '''returnType : RETURN expression ';' '''
     GenerateReturnProcQuadruple(insideFunction[1])
-
+    CodeGeneration.foundReturn = True
 
 def p_main(p):
     '''main : MAIN startMainFunction completeMainQuadruple '(' par ')' '{' blockMain '}' '''
@@ -245,8 +252,8 @@ def p_funcCall(p):
         print("ERROR, variable ", p[1], " has not been declared")
         sys.exit()
 
-    GenerateFuncCallQuadruples(p[1], matchedID, currentParameterList)
-    p[0] = (matchedID[0], Settings.memoryMap[1][1][matchedID[0]] - 1)
+    p[0] = GenerateFuncCallQuadruples(p[1], matchedID, currentParameterList)
+
     currentParameterList = []
     operatorStack.pop()
     if(parameterList):
@@ -288,6 +295,7 @@ def p_block(p):
         | funcCall ';' block
         | output block
         | input block
+        | returnType block
         | '''
 
 
@@ -308,6 +316,7 @@ def p_loopBlock(p):
         | funcCall ';' loopBlock
         | output loopBlock
         | input loopBlock
+        | returnType loopBlock
         | '''
   
 
