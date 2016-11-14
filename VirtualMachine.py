@@ -41,7 +41,8 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
         #GotoMain
         if (quadruple[0] == 'GotoMain'):
             #Initialize main function memory required to programMemory
-            programMemory.assignMainMemory(globalDirectory['main'][2:4])
+            if(globalDirectory['main'][2] is not None):
+                programMemory.assignMainMemory(globalDirectory['main'][2:4])
             currentQuadruple = quadruple[3]
 
         #Goto

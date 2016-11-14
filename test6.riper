@@ -1,0 +1,15 @@
+int num = 10;
+function int cero(int num, float val, bool azul, string verde) {
+    return 1;
+}
+function int dos(int num) {
+    return -1;
+}
+function int uno() {
+    return dos(num) + dos(num) + cero(1,2.0,true,'4');
+}
+
+
+main() {
+
+}

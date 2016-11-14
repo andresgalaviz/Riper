@@ -44,6 +44,7 @@ resetMemoryMap = copy.deepcopy(localMemoryMap)
 global constantDirectory
 constantDirectory = {}
 
+# We initialize constants needed for a complete compilation(-1, 1, true, false)
 constantDirectory[1] = globalMemoryMap[1][0]
 globalMemoryMap[1][0] = globalMemoryMap[1][0] + 1
 constantDirectory[-1] = globalMemoryMap[1][0]
@@ -53,9 +54,13 @@ globalMemoryMap[1][3] = globalMemoryMap[1][3] + 1
 constantDirectory['false'] = globalMemoryMap[1][3]
 globalMemoryMap[1][3] = globalMemoryMap[1][3] + 1
 
+# This is used to access each memory map numerically without the need of a conditional 
+# Used in conjunstion with the insideFunction 
 memoryMap = [globalMemoryMap, localMemoryMap]
 global insideFunction
-insideFunction = 0
+insideFunction = [0, '']
+
+# This is used whenever we need to map a type to its numeric representation
 opMap = {
         'int'       : 0,
         'float'     : 1,
@@ -64,23 +69,12 @@ opMap = {
         'void'      : 4
 }
 
-#Operand arithmetic
+# This is used whenever we need to map a type numeric representation to its type
 invOpMap = {
          0: 'int',   
          1: 'float', 
          2: 'string',
          3: 'bool',  
 }
-
-global operandStack
-operandStack = []
-global operatorStack
-operatorStack = []
-
-global conditionalCountStack
-conditionalCountStack = []
-global jumpStack
-jumpStack = []
-
-global quadruples
-quadruples = []
+global functionParameterDeclaration
+functionParameterDeclaration = []
