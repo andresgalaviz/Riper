@@ -147,7 +147,6 @@ def p_function(p):
   global localDirectory
   global insideFunction
 
-  print("CodeGeneration.foundReturn", CodeGeneration.foundReturn)
   if(CodeGeneration.currentFuncType < 4 and not CodeGeneration.foundReturn):
       print("Function %s with type %s does not have a return value" %(insideFunction[1], invOpMap[CodeGeneration.currentFuncType]))
       sys.exit()
@@ -164,7 +163,6 @@ def p_funcType(p):
         | VOID '''
     if (len(p) > 1):
         CodeGeneration.currentFuncType = opMap[p[1]]
-        print("Current Func type", CodeGeneration.currentFuncType)
   
 def p_idStartFunction(p):
     '''idStartFunction : ID '''
@@ -636,7 +634,6 @@ def p_data(p):
 
 def p_possibleIdCall(p):
     '''possibleIdCall : '[' expression ']'
-        | '(' parIn ')'
         | '''
     
     if(len(p) == 4):
