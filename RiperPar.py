@@ -19,7 +19,7 @@ tokens = RiperLex.tokens
 def p_program(p):
     '''program : globalVarDeclar generateGotoMain functionDeclar main'''
     # This is a complete and correct program, generate the EndProc quadruple
-    GenerateEndProcQuadruple()
+    GenerateRIPQuadruple()
 
 # Generates the first quadruple to the main function
 def p_generateGotoMain(p):
@@ -143,10 +143,12 @@ def p_function(p):
   Settings.globalDirectory[p[3]][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
                               [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
 
+  GenerateEndProcQuadruple()
   global localDirectory
   localDirectory = {}
   global insideFunction
   insideFunction = [0, '']
+  
 
 def p_funcType(p):
     '''funcType : INTTYPE
@@ -235,8 +237,6 @@ def p_typeID(p):
 
 def p_funcCall(p):
     '''funcCall : ID verifyParameterStack '(' parIn ')' '''
-
-    
     global currentParameterList
     global parameterList
     # functype, funcStart, memoryNeeded
@@ -244,9 +244,7 @@ def p_funcCall(p):
     if (matchedID is None):
         print("ERROR, variable ", p[1], " has not been declared")
         sys.exit()
-    
-    
-    print("Current parameter list: ", currentParameterList)
+
     GenerateFuncCallQuadruples(p[1], matchedID, currentParameterList)
     p[0] = (matchedID[0], Settings.memoryMap[1][1][matchedID[0]] - 1)
     currentParameterList = []
@@ -254,7 +252,6 @@ def p_funcCall(p):
     if(parameterList):
         currentParameterList = parameterList.pop()
         print("Printing from parameter list", currentParameterList)
-        
 
 def p_verifyParameterStack(p):
     '''verifyParameterStack : '''
@@ -281,9 +278,7 @@ def p_parameter(p):
     global parameterList
     
     parameter = operandStack.pop()
-    print("Pushing parameter: ", parameter)
     currentParameterList.append(parameter)
-
 
 def p_block(p):
     '''block : varDeclar block
