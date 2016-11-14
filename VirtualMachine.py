@@ -24,7 +24,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
 
     memoryStack = []
     currentQuadruple = 0
-
+    print("\nGLOBAL DIRECTORY\n")
     print(globalDirectory)
     #Initialize global memory required     
     globalMemoryMap.append(globalTemporals)
