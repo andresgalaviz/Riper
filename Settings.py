@@ -75,6 +75,7 @@ invOpMap = {
          1: 'float', 
          2: 'string',
          3: 'bool',  
+         4: 'void'
 }
 global functionParameterDeclaration
 functionParameterDeclaration = []
