@@ -130,7 +130,6 @@ def GenerateParInQuadruple(parnum):
     quadruples.append(['PARAMETER', operand, None, parnum])
 
 def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
-    print("Func Call: ", functionSignatue, parameterList)
     quadruples.append(['ERA', None, None, functionName])
     if(len(parameterList) != len(functionSignatue[4])):
         print("ERROR, invalid parameter count provided for function: %s" % functionName)
@@ -147,11 +146,12 @@ def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateReturnProcQuadruple(functionName):
     operand = operandStack.pop()
-    print("Function signature",functionName,  Settings.globalDirectory.get(functionName))
     quadruples.append(['RETURN', operand, None, Settings.globalDirectory.get(functionName)[3]])
-
-    
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateEndProcQuadruple():
+    quadruples.append(['ENDPROC', None, None, None])
+    
+# Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
+def GenerateRIPQuadruple():
     quadruples.append(['RIP', None, None, None])
