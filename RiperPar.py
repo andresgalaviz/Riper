@@ -31,9 +31,9 @@ def p_globalVarDeclar(p):
     '''globalVarDeclar : initVarDeclar '''
     if (len(p) > 1):
         global localDirectory
-        global globalDirectory
+        
         if (len(localDirectory) > 0):
-            globalDirectory = localDirectory.copy()
+            Settings.globalDirectory = localDirectory.copy()
             localDirectory = {}
         global globalTemporals 
         globalTemporals = memoryMap[1][1]
@@ -61,15 +61,15 @@ def p_vars(p):
     '''vars : type ID '=' expression moreVar'''
     if (len(p) > 1):
         global localDirectory
-        if (p[2] in localDirectory or p[2] in globalDirectory):
+        if (p[2] in localDirectory or p[2] in Settings.globalDirectory):
             print("ERROR, variable ", p[2], " has already been declared")
             sys.exit()
         else:
-            localDirectory[p[2]] = [0, currentType, memoryMap[insideFunction][0][currentType]]
-            operandStack.append((currentType, memoryMap[insideFunction][0][currentType]))
+            localDirectory[p[2]] = (0, currentType, memoryMap[insideFunction[0]][0][currentType])
+            operandStack.append((currentType, memoryMap[insideFunction[0]][0][currentType]))
             operatorStack.append(p[3])
             GenerateExpQuadruple()
-            memoryMap[insideFunction][0][currentType] = memoryMap[insideFunction][0][currentType] + 1
+            memoryMap[insideFunction[0]][0][currentType] = memoryMap[insideFunction[0]][0][currentType] + 1
             
             
 
@@ -79,17 +79,17 @@ def p_moreVar(p):
                | '''
     if (len(p) > 1):
         global localDirectory
-        if (p[2] in localDirectory or p[2] in globalDirectory):
+        if (p[2] in localDirectory or p[2] in Settings.globalDirectory):
             global insideFunction
-            if(insideFunction or globalDirectory[p[2]][0] == 1):
+            if(insideFunction[0] or Settings.globalDirectory[p[2]][0] == 1):
                 print("ERROR, variable ", p[2], " has already been declared")
                 sys.exit()
         else:
-            localDirectory[p[2]] = [0, currentType, memoryMap[insideFunction][0][currentType]]
-            operandStack.append((currentType, memoryMap[insideFunction][0][currentType]))
+            localDirectory[p[2]] = (0, currentType, memoryMap[insideFunction[0]][0][currentType])
+            operandStack.append((currentType, memoryMap[insideFunction[0]][0][currentType]))
             operatorStack.append(p[3])
             GenerateExpQuadruple()
-            memoryMap[insideFunction][0][currentType] = memoryMap[insideFunction][0][currentType] + 1
+            memoryMap[insideFunction[0]][0][currentType] = memoryMap[insideFunction[0]][0][currentType] + 1
   
 
 # Grammar rulle used to match to one of the basic variable type declaration tokens
@@ -138,15 +138,15 @@ def p_nextArray(p):
     expCount = 0;
   
 def p_function(p):
-  '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
+  '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block returnType '}' '''
   
-  globalDirectory[p[3]][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
+  Settings.globalDirectory[p[3]][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
                               [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
-  
+
   global localDirectory
   localDirectory = {}
   global insideFunction
-  insideFunction = 0
+  insideFunction = [0, '']
 
 def p_funcType(p):
     '''funcType : INTTYPE
@@ -171,22 +171,27 @@ def p_idStartFunction(p):
     
     global currentFuncType
     global insideFunction
-    globalDirectory[p[1]] = [currentFuncType, jumpStack.pop(), None]
-    insideFunction = 1
+    Settings.globalDirectory[p[1]] = [currentFuncType, jumpStack.pop(), None, memoryMap[0][0][currentFuncType], None]
+    memoryMap[0][0][currentFuncType] = memoryMap[0][0][currentFuncType] + 1
+    insideFunction = [1, p[1]]
     p[0] = p[1]
     
 
 def p_returnType(p):
     '''returnType : RETURN expression ';' '''
-    GenerateReturnProcQuadruple()
+    GenerateReturnProcQuadruple(insideFunction[1])
 
-def p_  (p):
+
+def p_main(p):
     '''main : MAIN startMainFunction completeMainQuadruple '(' par ')' '{' blockMain '}' '''
     if (len(p) > 1):
         global localDirectory
         if (len(localDirectory) > 0):
-            globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
+            Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
                                           [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
+            global functionParameterDeclaration
+            Settings.globalDirectory['main'][4] = functionParameterDeclaration
+            functionParameterDeclaration = []
             localDirectory = {}
 
 def p_startMainFunction(p):
@@ -195,7 +200,7 @@ def p_startMainFunction(p):
     localDirectory = {}
     jumpStack.append(len(quadruples))
     global insideFunction
-    insideFunction = 1
+    insideFunction = [1, 'main']
     Settings.memoryMap[1] = copy.deepcopy(resetMemoryMap)
     
     if(debugParser):
@@ -204,12 +209,16 @@ def p_startMainFunction(p):
 # Empty production used to complete the first GOTO quadruple to main function
 def p_completeMainQuadruple(p):
     '''completeMainQuadruple : '''
-    globalDirectory['main'] = [-1, len(quadruples), None]
+    Settings.globalDirectory['main'] = [-1, len(quadruples), None, None, None]
     CompleteQuadruple(0, 0)
 
 def p_par(p):
     '''par : typeID morePar 
         | '''
+
+    global functionParameterDeclaration
+    Settings.globalDirectory[insideFunction[1]][4] = functionParameterDeclaration
+    functionParameterDeclaration = []
 
 def p_morePar(p):
     '''morePar : ',' typeID morePar
@@ -218,42 +227,49 @@ def p_morePar(p):
 def p_typeID(p):
     '''typeID : type ID'''
     global currentType
-    localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction][0][currentType])
-    
+    global functionParameterDeclaration
+    localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction[0]][0][currentType])
+    functionParameterDeclaration.append(currentType)
     # Save in inside local variables
-    Settings.memoryMap[insideFunction][0][currentType] = Settings.memoryMap[insideFunction][0][currentType] + 1
+    Settings.memoryMap[insideFunction[0]][0][currentType] = Settings.memoryMap[insideFunction[0]][0][currentType] + 1
 
 def p_funcCall(p):
     '''funcCall : ID verifyParameterStack '(' parIn ')' '''
 
-    global globalDirectory
+    
     global currentParameterList
     global parameterList
     # functype, funcStart, memoryNeeded
-    matchedID = globalDirectory.get(p[1])
+    matchedID = Settings.globalDirectory.get(p[1])
     if (matchedID is None):
         print("ERROR, variable ", p[1], " has not been declared")
         sys.exit()
     
-    p[0] = matchedID 
-    print("Current parameter list: ", p[1], currentParameterList)
+    
+    print("Current parameter list: ", currentParameterList)
+    GenerateFuncCallQuadruples(p[1], matchedID, currentParameterList)
+    p[0] = (matchedID[0], Settings.memoryMap[1][1][matchedID[0]] - 1)
+    currentParameterList = []
+    operatorStack.pop()
     if(parameterList):
         currentParameterList = parameterList.pop()
-        currentParameterList.append(("MY FUNCTION CALL", p[1]))
-    
-    GenerateFuncCallQuadruples(p[1], matchedID)
+        print("Printing from parameter list", currentParameterList)
+        
 
 def p_verifyParameterStack(p):
     '''verifyParameterStack : '''
     global currentParameterList
+    global parameterList
+    operatorStack.append('(')
     if(currentParameterList):
+        print("Saving currentParameterList")
         parameterList.append(currentParameterList)
         currentParameterList = []
     
 def p_parIn(p):
     '''parIn : parameter moreParIn
         | '''
-
+    
 
 def p_moreParIn(p):
     '''moreParIn : ',' parameter moreParIn
@@ -263,11 +279,11 @@ def p_parameter(p):
     '''parameter : expression'''
     global currentParameterList
     global parameterList
+    
     parameter = operandStack.pop()
-    if(isinstance(parameter,tuple)):
-        currentParameterList.append(parameter)
-    else:
-        operandStack.pop()
+    print("Pushing parameter: ", parameter)
+    currentParameterList.append(parameter)
+
 
 def p_block(p):
     '''block : varDeclar block
@@ -277,7 +293,6 @@ def p_block(p):
         | funcCall ';' block
         | output block
         | input block
-        | returnType block
         | '''
 
 
@@ -305,10 +320,10 @@ def p_assign(p):
     '''assign : ID possibleArray '=' expression '''
     if (len(p) > 1):
         global localDirectory
-        global globalDirectory
+        
         matchedDataType = localDirectory.get(p[1])
         if (matchedDataType is None):
-            matchedDataType = globalDirectory.get(p[1])
+            matchedDataType = Settings.globalDirectory.get(p[1])
             if (matchedDataType is None):
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
@@ -554,10 +569,7 @@ def p_possibleFactorOp(p):
     if(debugParser):
         print("PUSHING ", p[1])
     operatorStack.append(p[1])   
-
   
-  
-
 def p_factor(p):
     '''factor : lPar expression rPar
         | data'''
@@ -593,15 +605,20 @@ def p_data(p):
     
     if(isinstance(p[1],str)):
         global localDirectory
-        global globalDirectory
+        
         variableTuple = localDirectory.get(p[1])
         if (variableTuple is None):
-            variableTuple = globalDirectory.get(p[1])
+            variableTuple = Settings.globalDirectory.get(p[1])
             if (variableTuple is None):
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
+            elif(isinstance(variableTuple, list)):
+                print(variableTuple)
+                print("ERROR, ", p[1], " is a function")
+                sys.exit()
             else:
                 variableTuple = (variableTuple[1], variableTuple[2])
+        
         else:
             variableTuple = (variableTuple[1], variableTuple[2])
     else: 
@@ -667,13 +684,13 @@ if __name__ == '__main__':
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
             quadrupleNumber = 0;
-            print globalDirectory
+            print Settings.globalDirectory
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
                 quadrupleNumber += 1
-            print(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory)
-            Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory)
-
+            Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
+            print("OperandStack", operandStack)
+            print("OperatorStack", operatorStack)
         except EOFError:
             print(EOFError)
     else:

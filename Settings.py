@@ -58,7 +58,7 @@ globalMemoryMap[1][3] = globalMemoryMap[1][3] + 1
 # Used in conjunstion with the insideFunction 
 memoryMap = [globalMemoryMap, localMemoryMap]
 global insideFunction
-insideFunction = 0
+insideFunction = [0, '']
 
 # This is used whenever we need to map a type to its numeric representation
 opMap = {
@@ -76,26 +76,5 @@ invOpMap = {
          2: 'string',
          3: 'bool',  
 }
-
-# Operand stack is used to keep track of operands for expression evaluation
-global operandStack
-operandStack = []
-
-# Operator stack is used to keep track of binary and unary operators for expression evaluation
-global operatorStack
-operatorStack = []
-
-# conditionalCountStack is used to keep track of how many contiguos conditionals we have
-global conditionalCountStack
-conditionalCountStack = []
-
-# jumpStack is used to keep track of the quadruples that still need to be completed
-global jumpStack
-jumpStack = []
-
-
-global parameterList
-parameterList = []
-
-global currentParameterList
-currentParameterList = []
+global functionParameterDeclaration
+functionParameterDeclaration = []

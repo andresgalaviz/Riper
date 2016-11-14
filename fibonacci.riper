@@ -1,17 +1,11 @@
-int x = 2 + 3 + 4 + 5;
-function int uno() {
-return 1;
-}
-function int dos() {
-return 2;
-}
-function int tres() {
-return 3;
-}
-function int fib(int num, int num5, int num4) {
-    return uno(2, dos(3,4,tres(5,6,7), 8),9);
+function int fibonacci(int num) {
+    if(num <= 1) {
+        string aqui = 'va el return 1;';
+    }
+
+    return fibonacci(num - 1) + fibonacci(num - 2);
 }
 
 main() {
-
+    fibonacci(10);
 }

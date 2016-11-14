@@ -32,7 +32,6 @@ parameterList = []
 global currentParameterList
 currentParameterList = []
 
-
 # GenerateExpQuadruple
 # This creates an expression quadruple and verifies type match
 # Quadruple signature: [operator, operandOne, OperandTwo, Result]
@@ -50,31 +49,29 @@ def GenerateExpQuadruple():
         else:
             quadruples.append([operator, operandOne[1], None, operandTwo[1]])
     else:
-        
         print("Error: Cannot %s (%s, %s)" % (operator, invOpMap[operandOne[0]], invOpMap[operandTwo[0]]))
         sys.exit()
 
-
-#GenerateOutputQuadruple
+# GenerateOutputQuadruple
 # This creates a console output quadruple 
 # Quadruple signature: [console, None, None, OutputOperand]
 def GenerateOutputQuadruple():
     quadruples.append(['console', None, None, operandStack.pop()[1]])
 
 
-#Conditional and loops
-#conditionalCountStack controls the elif positions in different levels
+# Conditional and loops
+# conditionalCountStack controls the elif positions in different levels
 def AppendConditionalCountStack():
     conditionalCountStack.append(0)
 
-
+# IncreaseConsitionalCountStack
+# Ricky comment this
 def IncreaseConsitionalCountStack():
     conditionalCountStack[-1] += 1
 
-
-#generates empty GotoF, appends position to jumpStack
+# GenerateGotofQuadruple
+# Generates empty GotoF, appends position to jumpStack
 def GenerateGotofQuadruple():
-    
     operand = operandStack.pop()
     
     if (operand[0] != 3):
@@ -84,8 +81,8 @@ def GenerateGotofQuadruple():
         jumpStack.append(len(quadruples))
         quadruples.append(['GotoF', operand[1], None, None])
 
-
-#generates full GotoT, pops and uses last position of jumpStack
+# GenerateGototQuadruple
+# Generates full GotoT, pops and uses last position of jumpStack
 def GenerateGototQuadruple():
     operand = operandStack.pop()
     if (operand[0] != 3):
@@ -94,24 +91,23 @@ def GenerateGototQuadruple():
     else:
         quadruples.append(['GotoT', operand[1], None, jumpStack.pop()])
 
-
-#generates empty Goto, appends position to jumpStack
+# Generates empty Goto, appends position to jumpStack
 def GenerateGotoQuadruple():
     jumpStack.append(len(quadruples))
     quadruples.append(['Goto', None, None, None])
 
-#generates empty Goto, appends position to jumpStack
+# Generates empty Goto, appends position to jumpStack
 def GenerateGotoMainQuadruple():
     jumpStack.append(len(quadruples))
     quadruples.append(['GotoMain', None, None, None])
 
 
-#completes info of the quadruple in position jumpPos of the jumpStack
+# Completes info of the quadruple in position jumpPos of the jumpStack
 def CompleteQuadruple(jumpPos, quadruplePos):
     quadruples[jumpStack.pop(jumpPos)][3] = len(quadruples) + quadruplePos
 
 
-#in conditionals, completes all the empty Goto from the elifs pending
+# In conditionals, completes all the empty Goto from the elifs pending
 def CompleteGotoQuadruples():
     while(conditionalCountStack[-1] > 0):
         CompleteQuadruple(-1, 0)
@@ -119,12 +115,12 @@ def CompleteGotoQuadruples():
     conditionalCountStack.pop()
 
 
-#adds current quadruple position to the jumpStack
+# Adds current quadruple position to the jumpStack
 def AppendJump():
     jumpStack.append(len(quadruples))
 
 
-#generates a Goto by poping and using position jumpPos of the jumpStack
+# Generates a Goto by poping and using position jumpPos of the jumpStack
 def GotoJump(jumpPos):
     quadruples.append(['Goto', None, None, jumpStack.pop(jumpPos)])
 
@@ -133,19 +129,28 @@ def GenerateParInQuadruple(parnum):
     operand = operandStack.pop()
     quadruples.append(['PARAMETER', operand, None, parnum])
 
-def GenerateFuncCallQuadruples(functionName, functionSignatue):
-    
+def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
+    print("Func Call: ", functionSignatue, parameterList)
     quadruples.append(['ERA', None, None, functionName])
+    if(len(parameterList) != len(functionSignatue[4])):
+        print("ERROR, invalid parameter count provided for function: %s" % functionName)
+        sys.exit()
+    for index, parameter in enumerate(parameterList):
+        if(parameter[0] != functionSignatue[4][index]):
+            print("ERROR, type mismatch for parameter %d in function %s" % (index + 1, functionName))
+            sys.exit()
+        quadruples.append(['PAR', index, None, parameter])
     quadruples.append(['GOSUB', None, None, functionSignatue[1]])
-    
-    operandStack.append((functionSignatue[0], Settings.memoryMap[1][1][functionSignatue[0]]))
+    quadruples.append(['=', functionSignatue[3], None, Settings.memoryMap[1][1][functionSignatue[0]]])
     Settings.memoryMap[1][1][functionSignatue[0]] = Settings.memoryMap[1][1][functionSignatue[0]] + 1
-    
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
-def GenerateReturnProcQuadruple():
+def GenerateReturnProcQuadruple(functionName):
     operand = operandStack.pop()
-    quadruples.append(['RETURN', None, None, operand])
+    print("Function signature",functionName,  Settings.globalDirectory.get(functionName))
+    quadruples.append(['RETURN', operand, None, Settings.globalDirectory.get(functionName)[3]])
+
+    
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateEndProcQuadruple():
