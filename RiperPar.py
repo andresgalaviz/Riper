@@ -59,7 +59,7 @@ def p_varDeclar(p):
 
 # Variable declaration statue
 def p_vars(p):
-    '''vars : type ID '=' expression moreVar'''
+    '''vars : type ID '=' expressionInput moreVar'''
     if (len(p) > 1):
         global localDirectory
         if (p[2] in localDirectory or p[2] in Settings.globalDirectory):
@@ -76,7 +76,7 @@ def p_vars(p):
 
 # Grammar rule used when more than one variable is declared
 def p_moreVar(p):
-    '''moreVar : ',' ID '=' expression moreVar
+    '''moreVar : ',' ID '=' expressionInput moreVar
                | '''
     if (len(p) > 1):
         global localDirectory
@@ -287,39 +287,36 @@ def p_parameter(p):
 
 def p_block(p):
     '''block : varDeclar block
-        | assign ';' block
+        | assign block
         | conditional block
         | loop block
         | funcCall ';' block
         | output block
-        | input block
         | returnType block
         | '''
 
 
 def p_blockMain(p):
     '''blockMain : varDeclar blockMain
-        | assign ';' blockMain
+        | assign blockMain
         | conditional blockMain
         | loop blockMain
         | funcCall ';' blockMain
         | output blockMain
-        | input blockMain
         | ''' 
 
 def p_loopBlock(p):
-    '''loopBlock : assign ';' loopBlock
+    '''loopBlock : assign loopBlock
         | conditional loopBlock
         | loop loopBlock
         | funcCall ';' loopBlock
         | output loopBlock
-        | input loopBlock
         | returnType loopBlock
         | '''
   
 
 def p_assign(p):
-    '''assign : ID possibleArray '=' expression '''
+    '''assign : ID possibleArray '=' expressionInput ';' '''
     if (len(p) > 1):
         global localDirectory
         
@@ -340,6 +337,10 @@ def p_assign(p):
         operatorStack.append(p[3])
         GenerateExpQuadruple()
 
+def p_expressionInput(p):
+    '''expressionInput : expression 
+                       | input '''
+    
 def p_possibleArray(p):
     '''possibleArray : '[' exp ']'
         | '''
@@ -602,8 +603,7 @@ def p_rPar(p):
 def p_data(p):
     '''data : constant
         | ID 
-        | funcCall
-        | input '''
+        | funcCall '''
     
     if(isinstance(p[1],str)):
         global localDirectory
@@ -658,7 +658,9 @@ def p_constant(p):
 def p_input(p):
     '''input : INPUT '(' inputPar ')' '''  
     # TODO: This should not be hardcoded?
-    p[0] = (0, 'INPUT')
+    p[0] = (0, 'INPUT', p[1])
+    print("currentType", currentType)
+    GenerateInputQuadruple(p[3][1], currentType)
     
 
 def p_inputPar(p):
