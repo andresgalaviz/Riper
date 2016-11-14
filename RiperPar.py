@@ -6,6 +6,7 @@ import ply.yacc as yacc
 import sys
 import copy
 import RiperLex
+import CodeGeneration
 from CodeGeneration import *
 import Settings
 from time import time
@@ -157,8 +158,8 @@ def p_funcType(p):
         | BOOLTYPE
         | VOID '''
     if (len(p) > 1):
-        global currentFuncType
-        currentFuncType = opMap[p[1]]
+        CodeGeneration.currentFuncType = opMap[p[1]]
+        print("Current Func type", CodeGeneration.currentFuncType)
   
 def p_idStartFunction(p):
     '''idStartFunction : ID '''
@@ -171,10 +172,9 @@ def p_idStartFunction(p):
     if(debugParser):
         print("Resetting memoryMap")
     
-    global currentFuncType
     global insideFunction
-    Settings.globalDirectory[p[1]] = [currentFuncType, jumpStack.pop(), None, memoryMap[0][0][currentFuncType], None]
-    memoryMap[0][0][currentFuncType] = memoryMap[0][0][currentFuncType] + 1
+    Settings.globalDirectory[p[1]] = [CodeGeneration.currentFuncType, jumpStack.pop(), None, memoryMap[0][0][CodeGeneration.currentFuncType], None]
+    memoryMap[0][0][CodeGeneration.currentFuncType] = memoryMap[0][0][CodeGeneration.currentFuncType] + 1
     insideFunction = [1, p[1]]
     p[0] = p[1]
     
