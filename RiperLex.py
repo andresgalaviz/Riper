@@ -18,8 +18,7 @@ reserved = {
     'for' : 'FOR',
     'while' : 'WHILE',
     'do' : 'DO',
-    'return' : 'RETURN',
-    'global' : 'GLOBAL'
+    'return' : 'RETURN'
 }
 
 # List of tokens
