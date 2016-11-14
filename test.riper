@@ -24,6 +24,10 @@ function int plusOne(int num) {
     return num + 1;
 }
 
+function void funcCall() {
+
+}
+
 function string fibPar(string num, string num2) {
     return ' ';
 }

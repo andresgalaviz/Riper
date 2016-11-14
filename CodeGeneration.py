@@ -155,7 +155,7 @@ def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
     else:
         quadruples.append(['=', functionSignatue[3], None, Settings.memoryMap[1][1][functionSignatue[0]]])
         Settings.memoryMap[1][1][functionSignatue[0]] = Settings.memoryMap[1][1][functionSignatue[0]] + 1
-        return (functionSignatue[0], Settings.memoryMap[1][1][matchedID[0]] - 1)
+        return (functionSignatue[0], Settings.memoryMap[1][1][functionSignatue[0]] - 1)
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateReturnProcQuadruple(functionName):
