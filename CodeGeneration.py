@@ -32,6 +32,10 @@ parameterList = []
 global currentParameterList
 currentParameterList = []
 
+global currentFuncType
+currentFuncType = -20
+global currentType
+
 # GenerateExpQuadruple
 # This creates an expression quadruple and verifies type match
 # Quadruple signature: [operator, operandOne, OperandTwo, Result]
@@ -124,11 +128,6 @@ def AppendJump():
 def GotoJump(jumpPos):
     quadruples.append(['Goto', None, None, jumpStack.pop(jumpPos)])
 
-# Generates the parameters into function quadruples
-def GenerateParInQuadruple(parnum):
-    operand = operandStack.pop()
-    quadruples.append(['PARAMETER', operand, None, parnum])
-
 def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
     quadruples.append(['ERA', None, None, functionName])
     if(len(parameterList) != len(functionSignatue[4])):
@@ -138,7 +137,7 @@ def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
         if(parameter[0] != functionSignatue[4][index]):
             print("ERROR, type mismatch for parameter %d in function %s" % (index + 1, functionName))
             sys.exit()
-        quadruples.append(['PAR', index, None, parameter])
+        quadruples.append(['PAR', index, None, parameter[1]])
     quadruples.append(['GOSUB', None, None, functionSignatue[1]])
     quadruples.append(['=', functionSignatue[3], None, Settings.memoryMap[1][1][functionSignatue[0]]])
     Settings.memoryMap[1][1][functionSignatue[0]] = Settings.memoryMap[1][1][functionSignatue[0]] + 1
@@ -146,7 +145,11 @@ def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateReturnProcQuadruple(functionName):
     operand = operandStack.pop()
-    quadruples.append(['RETURN', operand, None, Settings.globalDirectory.get(functionName)[3]])
+    if(currentFuncType != operand[0]):
+        print("ERROR, type mismatch for return value in function %s with type %d for return type %d" % 
+             (functionName, currentFuncType, operand[0]))
+        sys.exit()
+    quadruples.append(['RETURN', operand[1], None, Settings.globalDirectory.get(functionName)[3]])
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateEndProcQuadruple():
