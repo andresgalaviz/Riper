@@ -38,6 +38,15 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
     while quadruples[currentQuadruple][0] != 'RIP':
         quadruple = quadruples[currentQuadruple]
 
+
+        #Funtions
+        #ERA
+        if (quadruple[0] == 'ERA'):
+            memoryStack.append(programMemory.memory[1])
+            memoryStack.append(programMemory.memory[2])
+            programMemory.assignFunctionMemory(quadruple[3])
+
+
         #GotoMain
         if (quadruple[0] == 'GotoMain'):
             #Initialize main function memory required to programMemory
@@ -73,6 +82,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
             programMemory.assignValueToAddress(ops[quadruple[0]](programMemory.getValueFromAddress(quadruple[1]), programMemory.getValueFromAddress(quadruple[2])), quadruple[3])
             currentQuadruple += 1
 
+        #Assignation
         elif(quadruple[0] == '='):
             programMemory.assignValueToAddress(programMemory.getValueFromAddress(quadruple[1]), quadruple[3])
             currentQuadruple += 1
