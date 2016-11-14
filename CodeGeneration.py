@@ -170,6 +170,13 @@ def GenerateReturnProcQuadruple(functionName):
 def GenerateEndProcQuadruple():
     quadruples.append(['ENDPROC', None, None, None])
     
+def GenerateInputQuadruple(message, inputType):
+    print("Enter GenerateInputQuadruple")
+    quadruples.append(['INPUT', message, inputType, Settings.memoryMap[1][1][inputType]])
+    operandStack.append((inputType, Settings.memoryMap[1][1][inputType]))
+    Settings.memoryMap[1][1][inputType] = Settings.memoryMap[1][1][inputType] + 1
+    
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateRIPQuadruple():
     quadruples.append(['RIP', None, None, None])
+
