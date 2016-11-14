@@ -33,8 +33,13 @@ global currentParameterList
 currentParameterList = []
 
 global currentFuncType
-currentFuncType = -20
+currentFuncType = -1
+
 global currentType
+currentType = -1
+
+global foundReturn
+foundReturn = False
 
 # GenerateExpQuadruple
 # This creates an expression quadruple and verifies type match
@@ -128,6 +133,11 @@ def AppendJump():
 def GotoJump(jumpPos):
     quadruples.append(['Goto', None, None, jumpStack.pop(jumpPos)])
 
+# Generates the parameters into function quadruples
+def GenerateParInQuadruple(parnum):
+    operand = operandStack.pop()
+    quadruples.append(['PARAMETER', operand, None, parnum])
+
 def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
     quadruples.append(['ERA', None, None, functionName])
     if(len(parameterList) != len(functionSignatue[4])):
@@ -139,15 +149,20 @@ def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
             sys.exit()
         quadruples.append(['PAR', index, None, parameter[1]])
     quadruples.append(['GOSUB', None, None, functionSignatue[1]])
-    quadruples.append(['=', functionSignatue[3], None, Settings.memoryMap[1][1][functionSignatue[0]]])
-    Settings.memoryMap[1][1][functionSignatue[0]] = Settings.memoryMap[1][1][functionSignatue[0]] + 1
+    print("functionSignatue", functionSignatue)
+    if(functionSignatue[0] == 4):
+        return (functionSignatue[0], None)
+    else:
+        quadruples.append(['=', functionSignatue[3], None, Settings.memoryMap[1][1][functionSignatue[0]]])
+        Settings.memoryMap[1][1][functionSignatue[0]] = Settings.memoryMap[1][1][functionSignatue[0]] + 1
+        return (functionSignatue[0], Settings.memoryMap[1][1][matchedID[0]] - 1)
 
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateReturnProcQuadruple(functionName):
     operand = operandStack.pop()
     if(currentFuncType != operand[0]):
-        print("ERROR, type mismatch for return value in function %s with type %d for return type %d" % 
-             (functionName, currentFuncType, operand[0]))
+        print("ERROR, type mismatch for return value in function %s with type %s for return type %s" % 
+             (functionName, invOpMap[currentFuncType], invOpMap[operand[0]]))
         sys.exit()
     quadruples.append(['RETURN', operand[1], None, Settings.globalDirectory.get(functionName)[3]])
 
