@@ -3,13 +3,15 @@ function void test() {
 }
 
 function int fibonacci(int num) {
-    if(num <= 1) {
-        string aqui = 'va el return 1;';
+    if(num == 1) {
+        return 1;
     }
-
-    return test();
+    elif(num == 0) {
+        return 0;
+    }
+    return fibonacci(num - 1) + fibonacci(num - 2);
 }
 
 main() {
-    fibonacci(10);
+    console(fibonacci(10));
 }

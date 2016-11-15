@@ -22,8 +22,8 @@ ops = {
 def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory):
     print("\nEXECUTING CODE\n")
 
-    memoryStack = []
     currentQuadruple = 0
+    returnStack = []
     print("\nGLOBAL DIRECTORY\n")
     print(globalDirectory)
     #Initialize global memory required     
@@ -41,13 +41,40 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
 
         #Funtions
         #ERA
-        
+        if (quadruple[0] == 'ERA'):
+            programMemory.assignFunctionMemory(globalDirectory[quadruple[3]][2])
+            currentQuadruple += 1
+
+        #PAR
+        elif (quadruple[0] == 'PAR'):
+            programMemory.assignParameterToNewMemory(programMemory.getValueFromAddress(quadruple[3]), quadruple[3])
+            currentQuadruple += 1
+
+        #GOSUB
+        elif (quadruple[0] == 'GOSUB'):
+            programMemory.switchToNewMemory()
+            returnStack.append(currentQuadruple + 1)
+            currentQuadruple = quadruple[3]
+
+        #RETURN
+        elif (quadruple[0] == 'RETURN'):
+            programMemory.assignValueToAddress(programMemory.getValueFromAddress(quadruple[1]), quadruple[3])
+            currentQuadruple = returnStack.pop()
+            programMemory.recoverMemory()
+
+        #ENDPROC
+        elif (quadruple[0] == 'ENDPROC'):
+            currentQuadruple = returnStack.pop()
+            programMemory.recoverMemory()
+
+
+
 
         #GotoMain
-        if (quadruple[0] == 'GotoMain'):
+        elif (quadruple[0] == 'GotoMain'):
             #Initialize main function memory required to programMemory
             if(globalDirectory['main'][2] is not None):
-                programMemory.assignMainMemory(globalDirectory['main'][2:4])
+                programMemory.assignMainMemory(globalDirectory['main'][2])
             currentQuadruple = quadruple[3]
 
         #Goto

@@ -193,13 +193,12 @@ def p_main(p):
     '''main : MAIN startMainFunction completeMainQuadruple '(' par ')' '{' blockMain '}' '''
     if (len(p) > 1):
         global localDirectory
-        if (len(localDirectory) > 0):
-            Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
-                                          [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
-            global functionParameterDeclaration
-            Settings.globalDirectory['main'][4] = functionParameterDeclaration
-            functionParameterDeclaration = []
-            localDirectory = {}
+        Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
+                                      [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
+        global functionParameterDeclaration
+        Settings.globalDirectory['main'][4] = functionParameterDeclaration
+        functionParameterDeclaration = []
+        localDirectory = {}
 
 def p_startMainFunction(p):
     '''startMainFunction : '''
