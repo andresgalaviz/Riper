@@ -1,0 +1,8 @@
+function void fun() {
+
+
+}
+
+main() {
+    console(fun());
+}

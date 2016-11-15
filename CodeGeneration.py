@@ -70,7 +70,11 @@ def GenerateExpQuadruple():
 # This creates a console output quadruple 
 # Quadruple signature: [console, None, None, OutputOperand]
 def GenerateOutputQuadruple():
-    quadruples.append(['console', None, None, operandStack.pop()[1]])
+    message = operandStack.pop()[1]
+    if(message is None):
+        print("Error: Cannot print a None value")
+        sys.exit()
+    quadruples.append(['console', None, None, message])
 
 
 # Conditional and loops
