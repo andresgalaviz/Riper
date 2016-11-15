@@ -1,15 +1,13 @@
-function void test() {
-
-}
-
 function int fibonacci(int num) {
     if(num <= 1) {
-        string aqui = 'va el return 1;';
+        return 1;
     }
 
-    return test();
+    return fibonacci(num - 1) + fibonacci(num - 2);
 }
 
 main() {
     fibonacci(10);
+    array int A[1][2][3];
+    int x = A[0][1][2];
 }

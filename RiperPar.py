@@ -102,41 +102,27 @@ def p_type(p):
     if (len(p) > 1):
         global currentType
         currentType = opMap[p[1]]
+    
+# def p_moreExp(p):
+#     '''moreExp : ',' expression sumExpCount moreExp
+#         | '''
 
-# Used if more arrays are to be declared
-def p_arrays(p):
-    '''arrays : array moreArray '''
-
-# Array grammar declaration
-def p_array(p):
-    '''array : type ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
-    if (len(p) > 1):
-        global expCount
-        if (int(p[4][1]) != expCount):
-            print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
-            sys.exit()
-        expCount = 0;
-
-def p_moreExp(p):
-    '''moreExp : ',' expression sumExpCount moreExp
-        | '''
-
-def p_sumExpCount(p):
-    '''sumExpCount : '''
-    global expCount
-    expCount += 1
+# def p_sumExpCount(p):
+#     '''sumExpCount : '''
+#     # global expCount
+#     # expCount += 1
 
 def p_moreArray(p):
     '''moreArray : nextArray moreArray
         | '''
 
 def p_nextArray(p):
-    '''nextArray :  ',' ID '[' INT ']' '=' '{' expression sumExpCount moreExp '}' '''
-    global expCount
-    if (int(p[4][1]) != expCount):
-        print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
-        sys.exit()
-    expCount = 0;
+    '''nextArray :  ',' ID '[' INT ']' moreArrayDimensions '''
+    # global expCount
+    # if (int(p[4][1]) != expCount):
+    #     print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
+    #     sys.exit()
+    # expCount = 0;
   
 def p_function(p):
   '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
@@ -193,13 +179,14 @@ def p_main(p):
     '''main : MAIN startMainFunction completeMainQuadruple '(' par ')' '{' blockMain '}' '''
     if (len(p) > 1):
         global localDirectory
-        if (len(localDirectory) > 0):
-            Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
-                                          [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
-            global functionParameterDeclaration
-            Settings.globalDirectory['main'][4] = functionParameterDeclaration
-            functionParameterDeclaration = []
-            localDirectory = {}
+        
+        Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
+                                                [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
+        global functionParameterDeclaration
+        Settings.globalDirectory['main'][4] = functionParameterDeclaration
+        functionParameterDeclaration = []
+        print("localDirectory", localDirectory)
+        localDirectory = {}
 
 def p_startMainFunction(p):
     '''startMainFunction : '''
@@ -241,7 +228,7 @@ def p_typeID(p):
     Settings.memoryMap[insideFunction[0]][0][currentType] = Settings.memoryMap[insideFunction[0]][0][currentType] + 1
 
 def p_funcCall(p):
-    '''funcCall : ID verifyParameterStack '(' parIn ')' '''
+    '''funcCall : ID '(' verifyParameterStack parIn ')' '''
     global currentParameterList
     global parameterList
     # functype, funcStart, memoryNeeded
@@ -339,7 +326,8 @@ def p_assign(p):
 
 def p_expressionInput(p):
     '''expressionInput : expression 
-                       | input '''
+                       | input 
+                       | array '''
     
 def p_possibleArray(p):
     '''possibleArray : '[' exp ']'
@@ -603,7 +591,8 @@ def p_rPar(p):
 def p_data(p):
     '''data : constant
         | ID 
-        | funcCall '''
+        | funcCall 
+        | arrayAccess '''
     
     if(isinstance(p[1],str)):
         global localDirectory
@@ -629,17 +618,112 @@ def p_data(p):
     # p[0] = p[1]
     if(debugParser):
         print("PUSHING OPERAND ", variableTuple)  
+    print("variableTuple", variableTuple)
     operandStack.append(variableTuple)
 
+# Used if more arrays are to be declared
+def p_arrays(p):
+    '''arrays : array moreArray '''
 
-def p_possibleIdCall(p):
-    '''possibleIdCall : '[' expression ']'
-        | '''
+global R
+R = 1
+
+# Array grammar declaration
+def p_array(p):
+    '''array : type ID '[' calculateR moreArrayDimensions '''
+    print(p[4])
+    global R
+    arraySize = R
     
-    if(len(p) == 4):
-        p[0] = p[2]
+    for idx in range(len(arrDimensions)):
+        R = R/arrDimensions[idx][0]
+        print R
+        if(R not in constantDirectory):
+            constantDirectory[R] = globalMemoryMap[1][0]
+            globalMemoryMap[1][0] = globalMemoryMap[1][0] + 1
+        
+        arrDimensions[idx][1] = constantDirectory[R]
+    
+    global localDirectory
+    if (p[2] in localDirectory or p[2] in Settings.globalDirectory):
+        print("ERROR, variable ", p[2], " has already been declared")
+        sys.exit()
     else:
-        p[0] = None
+        localDirectory[p[2]] = (0, currentType, memoryMap[insideFunction[0]][0][currentType], arrDimensions)
+        print("memoryMap[insideFunction[0]][0][currentType]", memoryMap[insideFunction[0]][0][currentType])
+        memoryMap[insideFunction[0]][0][currentType] = memoryMap[insideFunction[0]][0][currentType] + arraySize
+        print("memoryMap[insideFunction[0]][0][currentType]", memoryMap[insideFunction[0]][0][currentType])
+
+arrDimensions = []
+def p_moreArrayDimensions(p):
+    '''moreArrayDimensions : '[' calculateR moreArrayDimensions
+                           | '''
+    if(len(p) > 1):
+        print(p[2])
+
+def p_calculateR(p):
+    '''calculateR : INT ']' '''
+    global R
+    global arrDimensions
+    R = R * p[1][1]
+    arrDimensions.append([p[1][1], None])
+
+prevArrayDimensions = []
+
+prevArraySignature = []
+currentArraySignature = None
+
+prevArraySums = []
+currentArraySum = 0
+
+def p_arrayAccess(p):
+    '''arrayAccess : startArrayAccess '[' calculateAddress dimensionAccess '''
+    
+    if(prevArrayDimensions):
+        arrDimensions = prevArrayDimensions.pop()
+    operatorStack.pop()
+    p[0] = (1, operandStack.pop()[1])
+
+def p_startArrayAccess(p):
+    '''startArrayAccess : ID '''
+    global arrDimensions
+    global prevArrayDimensions
+    global prevArraySignature
+    global currentArraySignature
+    if(arrDimensions):
+        prevArrayDimensions.append(arrDimensions)
+        prevArraySignature.append(currentArraySignature)
+        if(p[1] in localDirectory):
+            currentArraySignature = localDirectory.get(p[1])
+        elif(p[2] in globalDirectory):
+            currentArraySignature = globalDirectory.get(p[1])
+        else:
+            print("ERROR, array variable ", p[1], " has not been declared")
+        print("currentArraySignature", currentArraySignature)
+        arrDimensions = 0
+    operatorStack.append('(')
+        
+def p_calculateAddress(p):
+    '''calculateAddress : expression ']' '''
+    global arrDimensions
+    global currentArraySum
+    print("arrDimensions", currentArraySignature[3][arrDimensions][1])
+    
+    operatorStack.append('*')
+    operandStack.append((0, currentArraySignature[3][arrDimensions][1]))
+    print("operandStack", operandStack)
+    GenerateExpQuadruple()
+    if(arrDimensions > 0):
+        operatorStack.append('+')
+        GenerateExpQuadruple()
+    
+    arrDimensions = arrDimensions + 1
+
+def p_dimensionAccess(p):
+    '''dimensionAccess : '[' calculateAddress dimensionAccess
+                       | '''
+
+
 
 def p_constant(p):
     '''constant : INT
@@ -691,9 +775,11 @@ if __name__ == '__main__':
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
                 quadrupleNumber += 1
-            Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
             print("OperandStack", operandStack)
             print("OperatorStack", operatorStack)
+            print("globalDirectory", memoryMap)
+            Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
+
         except EOFError:
             print(EOFError)
     else:
