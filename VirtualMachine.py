@@ -41,11 +41,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
 
         #Funtions
         #ERA
-        if (quadruple[0] == 'ERA'):
-            memoryStack.append(programMemory.memory[1])
-            memoryStack.append(programMemory.memory[2])
-            programMemory.assignFunctionMemory(quadruple[3])
-
+        
 
         #GotoMain
         if (quadruple[0] == 'GotoMain'):

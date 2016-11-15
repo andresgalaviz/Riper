@@ -1,9 +1,9 @@
 function int Uno() {
-    return 3 + 4;
+    return 4;
 }
 
 
 main() {
-    int y = Uno();
+    3 +3;
     int x = 9;
 }
