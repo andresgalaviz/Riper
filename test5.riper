@@ -1,9 +1,10 @@
-function void Uno(int a, int b, int c) {
+function int Uno(int a, int b, int c) {
     int x = 10;
+    console('Will return a...',a + b + c + x);
+    return a + b + c + x;
 }
 
 
 main() {
-    console('hola');
-    console(Uno(1,2,3));
+    console('Will sum everything in the end...','',Uno(1,2,3) + Uno(Uno(0,0,0),Uno(0,0,0),Uno(0,0,0)));
 }

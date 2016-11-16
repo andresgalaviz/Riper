@@ -1,7 +1,3 @@
-function void test() {
-
-}
-
 function int fibonacci(int num) {
     if(num == 1) {
         return 1;
