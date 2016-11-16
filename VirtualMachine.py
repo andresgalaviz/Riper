@@ -33,6 +33,8 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
     #Assign the constant values to the memory
     programMemory.assignConstants(constantDirectory)
 
+    print programMemory.memory
+
     #Iterate through the quadruples
     print("\nSTART EXECUTION\n")
     while quadruples[currentQuadruple][0] != 'RIP':

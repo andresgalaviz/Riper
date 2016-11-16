@@ -1,11 +1,9 @@
-function int Uno(int a, int b, int c) {
+function void Uno(int a, int b, int c) {
     int x = 10;
-    return a + b + c + x;
 }
 
 
 main() {
     console('hola');
     console(Uno(1,2,3));
-    int x = Uno(1,2,3) + Uno(1,2,3);
 }
