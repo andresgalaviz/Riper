@@ -45,15 +45,20 @@ foundReturn = False
 # This creates an expression quadruple and verifies type match
 # Quadruple signature: [operator, operandOne, OperandTwo, Result]
 def GenerateExpQuadruple():
+    print("operandStack1", operandStack)
     operator = operatorStack.pop()
     operandTwo = operandStack.pop()
     operandOne = operandStack.pop()
     
+    print("operator, operandOne, operandTwo", operator, operandOne, operandTwo)
+    
     result = SemanticCube.SearchSemanticCube(operator, operandOne[0], operandTwo[0])
+    print("result", result)
     if (result != -1):
         if(operator != '='):
             quadruples.append([operator, operandOne[1], operandTwo[1], Settings.memoryMap[1][1][result]])
             operandStack.append((result, Settings.memoryMap[1][1][result])) #Second position would be the temporal name?
+            print("operandStack2", operandStack)
             Settings.memoryMap[1][1][result] = Settings.memoryMap[1][1][result] + 1
         else:
             quadruples.append([operator, operandOne[1], None, operandTwo[1]])
@@ -65,7 +70,11 @@ def GenerateExpQuadruple():
 # This creates a console output quadruple 
 # Quadruple signature: [console, None, None, OutputOperand]
 def GenerateOutputQuadruple():
-    quadruples.append(['console', None, None, operandStack.pop()[1]])
+    message = operandStack.pop()[1]
+    if(message is None):
+        print("Error: Cannot print a None value")
+        sys.exit()
+    quadruples.append(['console', None, None, message])
 
 
 # Conditional and loops
@@ -169,7 +178,9 @@ def GenerateReturnProcQuadruple(functionName):
 # Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
 def GenerateEndProcQuadruple():
     quadruples.append(['ENDPROC', None, None, None])
-    
+
+# Used to generate the input quadruple when assigning to a variable, assumes we will introduce the same
+# valuetype. This will be verified or terminated in execution
 def GenerateInputQuadruple(message, inputType):
     print("Enter GenerateInputQuadruple")
     quadruples.append(['INPUT', message, inputType, Settings.memoryMap[1][1][inputType]])
