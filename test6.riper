@@ -1,15 +1,12 @@
-bool x = input('hola');
-function int fibonacci(int num) {
-    if(num <= 1) {
-        return 1;
-    }
-
-    return fibonacci(num - 1) + fibonacci(num - 2);
+bool x = input('true');
+function int Double(int num) {
+    return num + num;
 }
 
 main() {
-    bool z = input('hola');
-    bool xx = input('hola');
-    int y = input('hola');
-    int val = -1 + fibonacci(y) + y;
+    bool z = input('true');
+    bool xx = input('false');
+    int y = input('13.4');
+    int val = -1 + Double(y) + y;
+    console(val);
 }

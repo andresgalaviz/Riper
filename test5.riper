@@ -1,5 +1,10 @@
+function void Print(string a) {
+    console(a);
+}
+
 function int Uno(int a, int b, int c) {
     int x = 10;
+    Print('PRINT FUNC called inside Uno');
     console('Will return a...',a + b + c + x);
     return a + b + c + x;
 }

@@ -1,5 +1,6 @@
 from Memory import *
 import operator
+from time import sleep
 
 global ops
 ops = {
@@ -39,8 +40,8 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
     print("\nSTART EXECUTION\n")
     while quadruples[currentQuadruple][0] != 'RIP':
         quadruple = quadruples[currentQuadruple]
-
-
+        
+        
         #Funtions
         #ERA
         if (quadruple[0] == 'ERA'):
@@ -96,6 +97,32 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
                 currentQuadruple = quadruple[3]
             else:
                 currentQuadruple += 1
+
+        #input
+        elif (quadruple[0] == 'INPUT'):
+            value = quadruple[1]
+            if(quadruple[2] == 0):
+                try:
+                    #Can not cast a STRING in float format directly to int, so double cast is used
+                    value = int(float(value))
+                except:
+                    print("ERROR, the input can not be cast to int")
+                    sys.exit()
+            elif(quadruple[2] == 1):
+                try:
+                    value = float(value)
+                except:
+                    print("ERROR, the input can not be cast to float")
+                    sys.exit()
+            elif(quadruple[2] == 3):
+                if (value == 'true' or value == 'false'):
+                    value = value == 'true'
+                else:
+                    print("ERROR, the input can not be cast to bool")
+                    sys.exit()
+            programMemory.assignValueToAddress(value, quadruple[3])
+            currentQuadruple += 1
+
 
         #Console
         elif (quadruple[0] == 'console'):
