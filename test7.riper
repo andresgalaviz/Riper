@@ -1,8 +1,17 @@
-function void fun() {
-
-
+function int Num(int a) {
+    if (a < 10) {
+        return 5;
+    }
+    elif (a < 20) {
+        return 15;
+    }
+    else{
+        return 25;
+    }
 }
 
 main() {
-    console(fun());
+    console(Num(22));
+
+
 }

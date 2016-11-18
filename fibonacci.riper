@@ -9,5 +9,5 @@ function int fibonacci(int num) {
 }
 
 main() {
-    console(fibonacci(10));
+    console(fibonacci(fibonacci(7)));
 }
