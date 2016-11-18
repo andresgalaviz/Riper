@@ -14,7 +14,8 @@ operMap = {
             '=='        : 11,
             '&&'        : 12,
             '||'        : 13,
-            'console'   : 14}
+            'console'   : 14,
+            '+*'        : 15}
 
 #Additional
 
@@ -32,6 +33,9 @@ for i in range(0,4):
     semanticCube[i,1,1] = 1
     semanticCube[i,0,1] = 1
     semanticCube[i,1,0] = 1
+
+semanticCube[15,0,0] = 0
+
 # = a a : a
 for i in range(0,4):
     semanticCube[5, i, i] = i
