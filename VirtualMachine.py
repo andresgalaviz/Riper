@@ -1,8 +1,8 @@
 from Memory import *
 import operator
 from time import sleep
-
 global ops
+#ops is used for arithmetic operation, this was a cleaner approach than making a condition for every operator
 ops = {
     "+" : operator.add,
     "-" : operator.sub,
@@ -21,84 +21,78 @@ ops = {
 
 
 def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, constantDirectory):
-    print("\nEXECUTING CODE\n")
 
     currentQuadruple = 0
     returnStack = []
     print("\nGLOBAL DIRECTORY\n")
     print(globalDirectory)
-    #Initialize global memory required     
-    globalMemoryMap.append(globalTemporals)
+    #Initialize global memory required  
+    globalMemoryMap.insert(1, globalTemporals)
+    globalMemoryMap.insert(1, None)
     programMemory = Memory(globalMemoryMap)
 
     #Assign the constant values to the memory
     programMemory.assignConstants(constantDirectory)
 
-    print programMemory.memory
-
     #Iterate through the quadruples
     print("\nSTART EXECUTION\n")
     while quadruples[currentQuadruple][0] != 'RIP':
         quadruple = quadruples[currentQuadruple]
-        
-        
+             
         #Funtions
-        #ERA
+        #ERA: creates the memory of the function call
         if (quadruple[0] == 'ERA'):
             programMemory.assignFunctionMemory(globalDirectory[quadruple[3]][2])
             currentQuadruple += 1
 
-        #PAR
+        #PAR: sends parameters to new memory of function call
         elif (quadruple[0] == 'PAR'):
             programMemory.assignParameterToNewMemory(programMemory.getValueFromAddress(quadruple[3]), quadruple[3])
             currentQuadruple += 1
 
-        #GOSUB
+        #GOSUB: 'sleeps' current memory and assigns function call memory as current
         elif (quadruple[0] == 'GOSUB'):
             programMemory.switchToNewMemory()
             returnStack.append(currentQuadruple + 1)
             currentQuadruple = quadruple[3]
 
-        #RETURN
+        #RETURN: saves the value to be returned, returns to quadruple after function call and wakes up memory
         elif (quadruple[0] == 'RETURN'):
             programMemory.assignValueToAddress(programMemory.getValueFromAddress(quadruple[1]), quadruple[3])
             currentQuadruple = returnStack.pop()
             programMemory.recoverMemory()
 
-        #ENDPROC
+        #ENDPROC: returns to the quadruple after function call and wakes up memory
         elif (quadruple[0] == 'ENDPROC'):
             currentQuadruple = returnStack.pop()
             programMemory.recoverMemory()
 
-
-
-
-        #GotoMain
+        #GotoMain: After assigning any global variables, assigns main memory and goes to main quadruple
         elif (quadruple[0] == 'GotoMain'):
             #Initialize main function memory required to programMemory
             if(globalDirectory['main'][2] is not None):
                 programMemory.assignMainMemory(globalDirectory['main'][2])
             currentQuadruple = quadruple[3]
 
-        #Goto
+        #Goto: goes to quadruple indicated
         elif (quadruple[0] == 'Goto'):
             currentQuadruple = quadruple[3]
 
-        #GotoF
+        #GotoF: if false goes to quadruple indicated
         elif (quadruple[0] == 'GotoF'):
             if(not programMemory.getValueFromAddress(quadruple[1])):
                 currentQuadruple = quadruple[3]
             else:
                 currentQuadruple += 1
 
-        #GotoT
+        #GotoT: if true goes to quadruple indicated
         elif (quadruple[0] == 'GotoT'):
             if(programMemory.getValueFromAddress(quadruple[1])):
                 currentQuadruple = quadruple[3]
             else:
                 currentQuadruple += 1
 
-        #input
+        #input: parses the input to the specified type and saves value to address
         elif (quadruple[0] == 'INPUT'):
             value = quadruple[1]
             if(quadruple[2] == 0):
@@ -123,23 +117,20 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
             programMemory.assignValueToAddress(value, quadruple[3])
             currentQuadruple += 1
 
-
-        #Console
+        #Console: prints value from address
         elif (quadruple[0] == 'console'):
             print programMemory.getValueFromAddress(quadruple[3])
             currentQuadruple += 1
 
-        #Arithmetic
+        #Arithmetic: executes operation based on the operator received, saves resultant value to address
         elif (quadruple[0] in ['+', '-', '*', '/', '%', '<', '<=', '>', '>=', '==', '!=', '&&', '||']):
             programMemory.assignValueToAddress(ops[quadruple[0]](programMemory.getValueFromAddress(quadruple[1]), programMemory.getValueFromAddress(quadruple[2])), quadruple[3])
             currentQuadruple += 1
 
-        #Assignation
+        #Assignation: assigns value to address
         elif(quadruple[0] == '='):
             programMemory.assignValueToAddress(programMemory.getValueFromAddress(quadruple[1]), quadruple[3])
-            currentQuadruple += 1
-            
-            
+            currentQuadruple += 1 
             
     print("\nFINISHED EXECUTION\n")
     print programMemory.memory

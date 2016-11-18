@@ -1,12 +1,7 @@
 bool x = input('true');
-function int Double(int num) {
-    return num + num;
-}
+array int arr [5000];
+
 
 main() {
-    bool z = input('true');
-    bool xx = input('false');
-    int y = input('13.4');
-    int val = -1 + Double(y) + y;
-    console(val);
+    int y = 0;
 }

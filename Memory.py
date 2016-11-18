@@ -1,5 +1,22 @@
 import sys
 import Settings
+from time import sleep
+
+#local copying the initial virtual memory map from Settings
+global memorySettings
+memorySettings = [[],[],[],[]]
+
+for idx, x in enumerate(Settings.globalMemoryMap):
+    for y in x:
+        memorySettings[idx * 3].append(y)
+
+for idx, x in enumerate(Settings.localMemoryMap):
+    for y in x:
+        memorySettings[idx + 1].append(y)
+
+memorySettings[3][0] -= 2
+memorySettings[3][3] -= 2
+
 #Position of the first global variables, used to know the 0 offset
 global firstPosition
 firstPosition = Settings.globalMemoryMap[0][0]
@@ -15,6 +32,7 @@ varSize = 4 * scopeSize
 #requiredMemory is [[globalDeclared],[constants],[globalTemporals]]
 class Memory:
     def __init__(self, requiredMemory):
+        global memorySettings
         #The memory of the program will be an array of 4 arrays, corresponding to: 
         #global declared,
         #local declared, 
@@ -23,9 +41,18 @@ class Memory:
         #Each of those 4 will have another 4 arrays, which are the 4 data types
         self.memory = [[],[],[],[]]
         self.memoryStack = []
-        for scope in requiredMemory:
-            for dataCount in scope:
-                self.memory[(dataCount - firstPosition) / scopeSize % 4].append(((dataCount - firstPosition) % scopeSize) * [None])
+        for scopeId, scope in enumerate(requiredMemory):
+            if (scope):
+                for dataCountId, dataCount in enumerate(scope):
+                    if(dataCount > memorySettings[scopeId][dataCountId] + scopeSize):
+                        print("ERROR: Memory overflow, not enough space for ", Settings.invOpMap[dataCountId])
+                        sys.exit()
+                    elif(dataCount == memorySettings[scopeId][dataCountId] + scopeSize):
+                         self.memory[(dataCount - firstPosition - 1) / scopeSize % 4].append((dataCount - memorySettings[scopeId][dataCountId]) * [None])        
+                    else:
+                        self.memory[(dataCount - firstPosition) / scopeSize % 4].append((dataCount - memorySettings[scopeId][dataCountId]) * [None])
+                    #(dataCount - memorySettings[scopeId][dataCountId]) * [None]
+                    #((dataCount - firstPosition) % scopeSize) * [None]
 
     def assignConstants(self, constantDirectory):
         for value,virtualAddress in constantDirectory.items():
@@ -83,13 +110,9 @@ class Memory:
         return self.memory[(virtualAddress - firstPosition) / scopeSize % 4][(virtualAddress - firstPosition) / varSize][(virtualAddress - firstPosition) % scopeSize]
 
     def assignValueToAddress(self, result, virtualAddress):
-        if (virtualAddress < Settings.globalMemoryMap[0][1]):
+        global memorySettings
+        if (virtualAddress < memorySettings[0][1]):
             result = int(result)
-        elif (virtualAddress < Settings.globalMemoryMap[0][2]):
+        elif (virtualAddress < memorySettings[0][2]):
             result = float(result)
-
         self.memory[(virtualAddress - firstPosition) / scopeSize % 4][(virtualAddress - firstPosition) / varSize][(virtualAddress - firstPosition) % scopeSize] = result
-
-            
-
-        
