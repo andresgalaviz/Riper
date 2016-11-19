@@ -65,7 +65,10 @@ class Memory:
         for scope in mainDirectory:
             count += 1
             self.memory[count] = []
-            for dataCount in scope:
+            for dataCountId, dataCount in enumerate(scope):
+                if (dataCount > scopeSize):
+                    print("ERROR:  Memory overflow, not enough space for " + Settings.invOpMap[dataCountId])
+                    sys.exit()
                 self.memory[count].append(dataCount * [None])
 
     def assignFunctionMemory(self, functionDirectory):
@@ -74,7 +77,10 @@ class Memory:
         count = 0
         for scope in functionDirectory:
             count += 1
-            for dataCount in scope:
+            for dataCountId, dataCount in enumerate(scope):
+                if (dataCount > scopeSize):
+                    print("ERROR:  Memory overflow, not enough space for " + Settings.invOpMap[dataCountId])
+                    sys.exit()
                 self.newMemory[count].append(dataCount * [None])
             
 
