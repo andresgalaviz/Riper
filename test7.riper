@@ -12,6 +12,4 @@ function int Num(int a) {
 
 main() {
     console(Num(22));
-
-
 }

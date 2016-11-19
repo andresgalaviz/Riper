@@ -1,7 +1,7 @@
-bool x = input('true');
-array int arr [5000];
 
+array int arr[100];
 
 main() {
-    int y = 0;
+    int a = arr[1];
+    
 }

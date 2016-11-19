@@ -301,8 +301,8 @@ def p_loopBlock(p):
   
 
 def p_assign(p):
-    '''assign : ID possibleArray '=' expressionInput ';' '''
-    if (len(p) > 1):
+    '''assign : possibleArray '=' expressionInput ';' '''
+    if(isinstance(p[1],str)):
         global localDirectory
         
         matchedDataType = localDirectory.get(p[1])
@@ -317,10 +317,12 @@ def p_assign(p):
             matchedDataType = (matchedDataType[1], matchedDataType[2])
         
         # Continue here
-        
+        print("matchedDataType[1] + p[2]", matchedDataType[1], p[2])
         operandStack.append(matchedDataType)
-        operatorStack.append(p[3])
-        GenerateExpQuadruple()
+    
+    operatorStack.append(p[2])
+    print("operatorStack", operatorStack)
+    GenerateExpQuadruple()
 
 def p_expressionInput(p):
     '''expressionInput : expression 
@@ -328,9 +330,11 @@ def p_expressionInput(p):
                        | array '''
     
 def p_possibleArray(p):
-    '''possibleArray : '[' exp ']'
-        | '''
-  
+    '''possibleArray : ID
+                     | arrayAccess'''
+    print("p[1]", p[1])
+    p[0] = p[1]
+    
 
 def p_conditional(p):
     '''conditional : IF appendConditionalCountStack '(' gotofIfExpression ')' '{' block '}' possibleElif possibleElse completeGotoQuadruples '''
@@ -538,7 +542,7 @@ def p_possibleTermOp(p):
 
 def p_term(p):
     '''term : factor possibleFactors'''
-    if (len(operatorStack) > 0 and operatorStack[-1] in ['+', '-']):
+    if (len(operatorStack) > 0 and operatorStack[-1] in ['+', '-', '+*']):
         if(debugParser):
             print("TOP +-, GENERATING")
         GenerateExpQuadruple()
@@ -677,10 +681,16 @@ currentArraySum = 0
 def p_arrayAccess(p):
     '''arrayAccess : startArrayAccess '[' calculateAddress dimensionAccess '''
     
+    operatorStack.pop()
+    p[0] = operandStack[-1]
+    
+    operatorStack.append('+*')
+    operandStack.append((0, currentArraySignature[2]))
+    operandStack.append(operandStack.pop())
+    GenerateExpQuadruple()
     if(prevArrayDimensions):
         arrDimensions = prevArrayDimensions.pop()
-    operatorStack.pop()
-    p[0] = (1, operandStack.pop()[1])
+
 
 def p_startArrayAccess(p):
     '''startArrayAccess : ID '''
@@ -693,10 +703,11 @@ def p_startArrayAccess(p):
         prevArraySignature.append(currentArraySignature)
         if(p[1] in localDirectory):
             currentArraySignature = localDirectory.get(p[1])
-        elif(p[2] in globalDirectory):
-            currentArraySignature = globalDirectory.get(p[1])
+        elif(p[1] in Settings.globalDirectory):
+            currentArraySignature = Settings.globalDirectory.get(p[1])
         else:
             print("ERROR, array variable ", p[1], " has not been declared")
+            sys.exit()
         print("currentArraySignature", currentArraySignature)
         arrDimensions = 0
     operatorStack.append('(')
