@@ -27,15 +27,15 @@ baseMemoryMap = {
 # Order: [0][0] GlobalInt, [0][1] GlobalFloat, [0][2] GlobalStrings, [0][3] GlobalBools
 #        [1][0] ConstantInt, [1][1] ConstantFloat, [1][2] ConstantStrings, [1][3] ConstantBools (I think we don't need strings and bools)
 
-globalMemoryMap = [[1000, 5000, 9000, 13000], 
-                   [4000, 8000, 12000, 16000]]
+globalMemoryMap = [[1000, 21000, 41000, 61000], 
+                   [16000, 36000, 56000, 76000]]
 
 # Local variables and temporals
 # Order: [0][0] LocalInt, [0][1] LocalFloat, [0][2] LocalStrings, [0][3] LocalBools
 #        [1][0] TemporalInt, [1][1] TemporalFloat, [1][2] TemporalStrings, [1][3] TemporalBools 
 
-localMemoryMap = [[2000, 6000, 10000, 14000],
-                  [3000, 7000, 11000, 15000]]
+localMemoryMap = [[6000, 26000, 46000, 66000],
+                  [11000, 31000, 51000, 71000]]
 
 resetMemoryMap = copy.deepcopy(localMemoryMap)
 

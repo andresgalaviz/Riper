@@ -179,13 +179,11 @@ def p_main(p):
     '''main : MAIN startMainFunction completeMainQuadruple '(' par ')' '{' blockMain '}' '''
     if (len(p) > 1):
         global localDirectory
-        
         Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
-                                                [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
+                                      [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
         global functionParameterDeclaration
         Settings.globalDirectory['main'][4] = functionParameterDeclaration
         functionParameterDeclaration = []
-        print("localDirectory", localDirectory)
         localDirectory = {}
 
 def p_startMainFunction(p):
@@ -705,10 +703,11 @@ def p_startArrayAccess(p):
         prevArraySignature.append(currentArraySignature)
         if(p[1] in localDirectory):
             currentArraySignature = localDirectory.get(p[1])
-        elif(p[2] in globalDirectory):
-            currentArraySignature = globalDirectory.get(p[1])
+        elif(p[1] in Settings.globalDirectory):
+            currentArraySignature = Settings.globalDirectory.get(p[1])
         else:
             print("ERROR, array variable ", p[1], " has not been declared")
+            sys.exit()
         print("currentArraySignature", currentArraySignature)
         arrDimensions = 0
     operatorStack.append('(')

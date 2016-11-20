@@ -1,10 +1,15 @@
+function void Print(string a) {
+    console(a);
+}
 
+function int Uno(int a, int b, int c) {
+    int x = 10;
+    Print('PRINT FUNC called inside Uno');
+    console('Will return a...',a + b + c + x);
+    return a + b + c + x;
+}
 
 
 main() {
-    int x = 0;
-    do{
-        x = x + 1;
-    } while (x < 5);
-
+    console('Will sum everything in the end...','',Uno(1,2,3) + Uno(Uno(0,0,0),Uno(0,0,0),Uno(0,0,0)));
 }

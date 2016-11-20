@@ -3,9 +3,10 @@ function bool isTrue(bool val) {
     return val;
 }
 main() {
-    int i = 10;
+    int i = 5;
     int varFloat5 = 10;
     while(i > 0 && isTrue(true)) {
-        varFloat5 = i + 1;
+        i = i - 1;
+        console(i);
     }
 }

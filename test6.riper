@@ -1,15 +1,7 @@
-bool x = input('hola');
-function int fibonacci(int num) {
-    if(num <= 1) {
-        return 1;
-    }
 
-    return fibonacci(num - 1) + fibonacci(num - 2);
-}
+array int arr[100];
 
 main() {
-    bool z = input('hola');
-    bool xx = input('hola');
-    int y = input('hola');
-    int val = -1 + fibonacci(y) + y;
+    int a = arr[1];
+    
 }
