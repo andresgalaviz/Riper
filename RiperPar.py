@@ -319,11 +319,13 @@ def p_assign(p):
         # Continue here
         print("matchedDataType[1] + p[2]", matchedDataType[1], p[2])
         operandStack.append(matchedDataType)
+        operatorStack.append(p[2])
+        GenerateExpQuadruple()
+    else:
+        operandStack.append(p[1])
+        operatorStack.append('=*') 
+        GenerateArrayAccessQuadruple()
     
-    operatorStack.append(p[2])
-    print("operatorStack", operatorStack)
-    GenerateExpQuadruple()
-
 def p_expressionInput(p):
     '''expressionInput : expression 
                        | input 
@@ -331,7 +333,7 @@ def p_expressionInput(p):
     
 def p_possibleArray(p):
     '''possibleArray : ID
-                     | arrayAccess'''
+                     | arrayAssign'''
     print("p[1]", p[1])
     p[0] = p[1]
     
@@ -678,16 +680,31 @@ currentArraySignature = None
 prevArraySums = []
 currentArraySum = 0
 
+def p_arrayAssign(p):
+    '''arrayAssign : startArrayAccess '[' calculateAddress dimensionAccess '''
+    
+    operatorStack.pop()
+    operatorStack.append('+*')
+    operandStack.append((0, currentArraySignature[2]))
+    
+    GenerateExpQuadruple()
+    p[0] = operandStack[-1]
+
+    if(prevArrayDimensions):
+        arrDimensions = prevArrayDimensions.pop()
+
 def p_arrayAccess(p):
     '''arrayAccess : startArrayAccess '[' calculateAddress dimensionAccess '''
     
     operatorStack.pop()
-    p[0] = operandStack[-1]
-    
     operatorStack.append('+*')
     operandStack.append((0, currentArraySignature[2]))
-    operandStack.append(operandStack.pop())
+    
     GenerateExpQuadruple()
+    operatorStack.append('=*')
+    GenerateArrayAccessQuadruple()
+    p[0] = operandStack[-1]
+
     if(prevArrayDimensions):
         arrDimensions = prevArrayDimensions.pop()
 

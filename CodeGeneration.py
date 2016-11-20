@@ -66,6 +66,13 @@ def GenerateExpQuadruple():
         print("Error: Cannot %s (%s, %s)" % (operator, invOpMap[operandOne[0]], invOpMap[operandTwo[0]]))
         sys.exit()
 
+def GenerateArrayAccessQuadruple():
+    operator = operatorStack.pop()
+    operand = operandStack.pop()
+    quadruples.append([operator, operand[1], None, Settings.memoryMap[1][1][0]])
+    operandStack.append((0, Settings.memoryMap[1][1][0])) #Second position would be the temporal name?
+    Settings.memoryMap[1][1][0] = Settings.memoryMap[1][1][0] + 1
+
 # GenerateOutputQuadruple
 # This creates a console output quadruple 
 # Quadruple signature: [console, None, None, OutputOperand]

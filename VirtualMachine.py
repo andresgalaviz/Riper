@@ -5,6 +5,7 @@ global ops
 #ops is used for arithmetic operation, this was a cleaner approach than making a condition for every operator
 ops = {
     "+" : operator.add,
+    "+*" : operator.add,
     "-" : operator.sub,
     "*" : operator.mul,
     "/" : operator.div,
@@ -126,10 +127,22 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
         elif (quadruple[0] in ['+', '-', '*', '/', '%', '<', '<=', '>', '>=', '==', '!=', '&&', '||']):
             programMemory.assignValueToAddress(ops[quadruple[0]](programMemory.getValueFromAddress(quadruple[1]), programMemory.getValueFromAddress(quadruple[2])), quadruple[3])
             currentQuadruple += 1
-
+            
+        #Arithmetic: executes operation based on the operator received, saves resultant value to address
+        elif (quadruple[0] == '+*'):
+            
+            programMemory.assignValueToAddress(ops[quadruple[0]](programMemory.getValueFromAddress(quadruple[1]), quadruple[2]), quadruple[3])
+            currentQuadruple += 1
+        #Arithmetic: executes operation based on the operator received, saves resultant value to address
+        elif (quadruple[0] == '=*'):
+            print(quadruple, programMemory.getValueFromAddress(quadruple[1]))
+            programMemory.assignValueToAddress(programMemory.getValueFromAddress(programMemory.getValueFromAddress(quadruple[1])), quadruple[3])
+            currentQuadruple += 1
         #Assignation: assigns value to address
         elif(quadruple[0] == '='):
+            print(quadruple, programMemory.getValueFromAddress(quadruple[3]))
             programMemory.assignValueToAddress(programMemory.getValueFromAddress(quadruple[1]), quadruple[3])
+            print(quadruple, programMemory.getValueFromAddress(quadruple[3]))
             currentQuadruple += 1 
             
     print("\nFINISHED EXECUTION\n")
