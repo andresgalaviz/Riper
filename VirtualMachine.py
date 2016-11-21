@@ -134,6 +134,8 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
                                                quadruple[2][0] if isinstance(quadruple[2], list) else programMemory.getValueFromAddress(quadruple[2])), 
                                                quadruple[3])
             currentQuadruple += 1
+            
+        # Logic: executes operation based on the operator received, saves resultant value to address
         elif(quadruple[0] in ['<', '<=', '>', '>=', '==', '!=', '&&', '||']):
             programMemory.assignValueToAddress(ops[quadruple[0]](
                                     programMemory.getValueFromAddress(
@@ -142,6 +144,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
                                         programMemory.getValueFromAddress(quadruple[2][0]) if isinstance(quadruple[2], list) else quadruple[2])),  
                                     quadruple[3])
             currentQuadruple += 1
+
         #Assignation: assigns value to address
         elif(quadruple[0] == '='):
             programMemory.assignValueToAddress(
