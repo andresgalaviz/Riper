@@ -34,4 +34,9 @@ main() {
     console(barray[0]);
     console(num&&num);
     console(num&&num2);
+    array string hola[10][10];
+    hola[9][9] = 'hola';
+    console(hola[9][9]);
+    string test = hola[9][9] + ' mundo';
+    console(test);
 }
