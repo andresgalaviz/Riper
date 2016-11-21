@@ -37,7 +37,7 @@ def p_globalVarDeclar(p):
             Settings.globalDirectory = localDirectory.copy()
             localDirectory = {}
         global globalTemporals 
-        globalTemporals = memoryMap[1][1]
+        globalTemporals = Settings.memoryMap[1][1]
 
 
 # Variable initialization section
@@ -66,11 +66,11 @@ def p_vars(p):
             print("ERROR, variable ", p[2], " has already been declared")
             sys.exit()
         else:
-            localDirectory[p[2]] = (0, currentType, memoryMap[insideFunction[0]][0][currentType])
-            operandStack.append((currentType, memoryMap[insideFunction[0]][0][currentType]))
+            localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction[0]][0][currentType])
+            operandStack.append((currentType, Settings.memoryMap[insideFunction[0]][0][currentType]))
             operatorStack.append(p[3])
             GenerateExpQuadruple()
-            memoryMap[insideFunction[0]][0][currentType] = memoryMap[insideFunction[0]][0][currentType] + 1
+            Settings.memoryMap[insideFunction[0]][0][currentType] = Settings.memoryMap[insideFunction[0]][0][currentType] + 1
             
             
 
@@ -86,11 +86,11 @@ def p_moreVar(p):
                 print("ERROR, variable ", p[2], " has already been declared")
                 sys.exit()
         else:
-            localDirectory[p[2]] = (0, currentType, memoryMap[insideFunction[0]][0][currentType])
-            operandStack.append((currentType, memoryMap[insideFunction[0]][0][currentType]))
+            localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction[0]][0][currentType])
+            operandStack.append((currentType, Settings.memoryMap[insideFunction[0]][0][currentType]))
             operatorStack.append(p[3])
             GenerateExpQuadruple()
-            memoryMap[insideFunction[0]][0][currentType] = memoryMap[insideFunction[0]][0][currentType] + 1
+            Settings.memoryMap[insideFunction[0]][0][currentType] = Settings.memoryMap[insideFunction[0]][0][currentType] + 1
   
 
 # Grammar rulle used to match to one of the basic variable type declaration tokens
@@ -127,8 +127,8 @@ def p_nextArray(p):
 def p_function(p):
   '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
   
-  Settings.globalDirectory[p[3]][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
-                              [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
+  Settings.globalDirectory[p[3]][2] = [[i - j for i, j in zip(Settings.memoryMap[1][0], resetMemoryMap[0])], 
+                              [i - j for i, j in zip(Settings.memoryMap[1][1], resetMemoryMap[1])]]
   
   global localDirectory
   global insideFunction
@@ -159,13 +159,13 @@ def p_idStartFunction(p):
     Settings.memoryMap[1] = copy.deepcopy(resetMemoryMap)
     
     if(debugParser):
-        print("Resetting memoryMap")
+        print("Resetting Settings.memoryMap")
     
     global insideFunction
     Settings.globalDirectory[p[1]] = [CodeGeneration.currentFuncType, jumpStack.pop(), None, None, None]
     if(CodeGeneration.currentFuncType != 4):
-        Settings.globalDirectory[p[1]][3] = memoryMap[0][0][CodeGeneration.currentFuncType]
-        memoryMap[0][0][CodeGeneration.currentFuncType] = memoryMap[0][0][CodeGeneration.currentFuncType] + 1
+        Settings.globalDirectory[p[1]][3] = Settings.memoryMap[0][0][CodeGeneration.currentFuncType]
+        Settings.memoryMap[0][0][CodeGeneration.currentFuncType] = Settings.memoryMap[0][0][CodeGeneration.currentFuncType] + 1
     insideFunction = [1, p[1]]
     p[0] = p[1]
     
@@ -179,8 +179,8 @@ def p_main(p):
     '''main : MAIN startMainFunction completeMainQuadruple '(' par ')' '{' blockMain '}' '''
     if (len(p) > 1):
         global localDirectory
-        Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(memoryMap[1][0], resetMemoryMap[0])], 
-                                      [i - j for i, j in zip(memoryMap[1][1], resetMemoryMap[1])]]
+        Settings.globalDirectory['main'][2] = [[i - j for i, j in zip(Settings.memoryMap[1][0], resetMemoryMap[0])], 
+                                      [i - j for i, j in zip(Settings.memoryMap[1][1], resetMemoryMap[1])]]
         global functionParameterDeclaration
         Settings.globalDirectory['main'][4] = functionParameterDeclaration
         functionParameterDeclaration = []
@@ -196,7 +196,7 @@ def p_startMainFunction(p):
     Settings.memoryMap[1] = copy.deepcopy(resetMemoryMap)
     
     if(debugParser):
-        print("Resetting memoryMap")
+        print("Resetting Settings.memoryMap")
 
 # Empty production used to complete the first GOTO quadruple to main function
 def p_completeMainQuadruple(p):
@@ -302,6 +302,7 @@ def p_loopBlock(p):
 
 def p_assign(p):
     '''assign : possibleArray '=' expressionInput ';' '''
+    matchedDataType = p[1]
     if(isinstance(p[1],str)):
         global localDirectory
         
@@ -318,12 +319,12 @@ def p_assign(p):
         
         # Continue here
         print("matchedDataType[1] + p[2]", matchedDataType[1], p[2])
-        operandStack.append(matchedDataType)
     
+    print("matchedDataType, assign", matchedDataType)
+    operandStack.append(matchedDataType)
     operatorStack.append(p[2])
-    print("operatorStack", operatorStack)
     GenerateExpQuadruple()
-
+    
 def p_expressionInput(p):
     '''expressionInput : expression 
                        | input 
@@ -332,7 +333,6 @@ def p_expressionInput(p):
 def p_possibleArray(p):
     '''possibleArray : ID
                      | arrayAccess'''
-    print("p[1]", p[1])
     p[0] = p[1]
     
 
@@ -542,7 +542,7 @@ def p_possibleTermOp(p):
 
 def p_term(p):
     '''term : factor possibleFactors'''
-    if (len(operatorStack) > 0 and operatorStack[-1] in ['+', '-', '+*']):
+    if (len(operatorStack) > 0 and operatorStack[-1] in ['+', '-']):
         if(debugParser):
             print("TOP +-, GENERATING")
         GenerateExpQuadruple()
@@ -606,7 +606,6 @@ def p_data(p):
                 print("ERROR, variable ", p[1], " has not been declared")
                 sys.exit()
             elif(isinstance(variableTuple, list)):
-                print(variableTuple)
                 print("ERROR, ", p[1], " is a function")
                 sys.exit()
             else:
@@ -620,7 +619,6 @@ def p_data(p):
     # p[0] = p[1]
     if(debugParser):
         print("PUSHING OPERAND ", variableTuple)  
-    print("variableTuple", variableTuple)
     operandStack.append(variableTuple)
 
 # Used if more arrays are to be declared
@@ -629,34 +627,37 @@ def p_arrays(p):
 
 global R
 R = 1
-
+global arrDimensionDeclaration
+arrDimensionDeclaration = []
 # Array grammar declaration
 def p_array(p):
     '''array : type ID '[' calculateR moreArrayDimensions '''
-    print(p[4])
+
     global R
+    global arrDimensionDeclaration
     arraySize = R
-    
-    for idx in range(len(arrDimensions)):
-        R = R/arrDimensions[idx][0]
+    print("R", R)
+    for idx in range(len(arrDimensionDeclaration)):
+        R = R/arrDimensionDeclaration[idx][0]
         print R
         if(R not in constantDirectory):
             constantDirectory[R] = globalMemoryMap[1][0]
             globalMemoryMap[1][0] = globalMemoryMap[1][0] + 1
         
-        arrDimensions[idx][1] = constantDirectory[R]
-    
+        arrDimensionDeclaration[idx][1] = constantDirectory[R]
+    R = 1
     global localDirectory
     if (p[2] in localDirectory or p[2] in Settings.globalDirectory):
         print("ERROR, variable ", p[2], " has already been declared")
         sys.exit()
     else:
-        localDirectory[p[2]] = (0, currentType, memoryMap[insideFunction[0]][0][currentType], arrDimensions)
-        print("memoryMap[insideFunction[0]][0][currentType]", memoryMap[insideFunction[0]][0][currentType])
-        memoryMap[insideFunction[0]][0][currentType] = memoryMap[insideFunction[0]][0][currentType] + arraySize
-        print("memoryMap[insideFunction[0]][0][currentType]", memoryMap[insideFunction[0]][0][currentType])
+        localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction[0]][0][currentType], arrDimensionDeclaration)
+        print("Settings.memoryMap[insideFunction[0]][0][currentType]", p[2], Settings.memoryMap[insideFunction[0]][0][currentType])
+        Settings.memoryMap[insideFunction[0]][0][currentType] = Settings.memoryMap[insideFunction[0]][0][currentType] + arraySize
+        print("Settings.memoryMap[insideFunction[0]][0][currentType]", arraySize, Settings.memoryMap[insideFunction[0]][0][currentType])
+    arrDimensionDeclaration = []
 
-arrDimensions = []
+
 def p_moreArrayDimensions(p):
     '''moreArrayDimensions : '[' calculateR moreArrayDimensions
                            | '''
@@ -666,10 +667,14 @@ def p_moreArrayDimensions(p):
 def p_calculateR(p):
     '''calculateR : INT ']' '''
     global R
-    global arrDimensions
+    global arrDimensionDeclaration
+    print('calculateRR', R)
     R = R * p[1][1]
-    arrDimensions.append([p[1][1], None])
+    print('calculateRR', R)
+    arrDimensionDeclaration.append([p[1][1], None])
 
+global arrDimensions
+arrDimensions = -1
 prevArrayDimensions = []
 
 prevArraySignature = []
@@ -680,14 +685,19 @@ currentArraySum = 0
 
 def p_arrayAccess(p):
     '''arrayAccess : startArrayAccess '[' calculateAddress dimensionAccess '''
-    
+    global currentArraySignature
+    global arrDimensions
     operatorStack.pop()
-    p[0] = operandStack[-1]
+    operatorStack.append('+')
+    operandStack.append((0, [currentArraySignature[2]]))
     
-    operatorStack.append('+*')
-    operandStack.append((0, currentArraySignature[2]))
-    operandStack.append(operandStack.pop())
     GenerateExpQuadruple()
+    p[0] = (currentArraySignature[1], [operandStack[-1][1]])
+    operandStack.pop() 
+    
+    if(arrDimensions != len(currentArraySignature[3])):
+        print("ERROR, dimension access mismatch for array '%s'" % p[1])
+        sys.exit()
     if(prevArrayDimensions):
         arrDimensions = prevArrayDimensions.pop()
 
@@ -711,13 +721,15 @@ def p_startArrayAccess(p):
         print("currentArraySignature", currentArraySignature)
         arrDimensions = 0
     operatorStack.append('(')
+    p[0] = p[1]
         
 def p_calculateAddress(p):
     '''calculateAddress : expression ']' '''
     global arrDimensions
     global currentArraySum
+    global currentArraySignature
     print("arrDimensions", currentArraySignature[3][arrDimensions][1])
-    
+    quadruples.append(["VER", operandStack[-1][1], 0, currentArraySignature[3][arrDimensions][0]])
     operatorStack.append('*')
     operandStack.append((0, currentArraySignature[3][arrDimensions][1]))
     print("operandStack", operandStack)
@@ -786,7 +798,7 @@ if __name__ == '__main__':
                 quadrupleNumber += 1
             print("OperandStack", operandStack)
             print("OperatorStack", operatorStack)
-            print("globalDirectory", memoryMap)
+            print("globalDirectory", Settings.memoryMap)
             Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
 
         except EOFError:

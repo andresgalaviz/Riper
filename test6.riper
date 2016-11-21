@@ -1,7 +1,42 @@
 
-array int arr[100];
+array int arr[12][12];
+function int fibonacci(int num) {
+    if(num == 1) {
+        return 1;
+    }
+    elif(num == 0) {
+        return 0;
+    }
+    return fibonacci(num - 1) + fibonacci(num - 2);
+}
 
 main() {
-    int a = arr[1];
-    
+    arr[11][11] = fibonacci(fibonacci(7));
+    int a = arr[11][11];
+    array float farr[100];
+    console('A', a);
+    console('Array', arr[11][11]);
+    console('Array', arr[11][11]);
+    farr[11] = 3.5;
+    int b = farr[11]*2;
+    float c = farr[11];
+    console(farr[11]);
+    console(b);
+    console(c);
+    bool num = true;
+    bool num2 = false;
+    array bool barray[11];
+    console(barray[0]);
+    barray[2] = true;
+    console(barray[2]);
+    console(barray[1]);
+    barray[0] = true;
+    console(barray[0]);
+    console(num&&num);
+    console(num&&num2);
+    array string hola[10][10];
+    hola[9][9] = 'hola';
+    console(hola[9][9]);
+    string test = hola[9][9] + ' mundo';
+    console(test);
 }

@@ -45,26 +45,32 @@ foundReturn = False
 # This creates an expression quadruple and verifies type match
 # Quadruple signature: [operator, operandOne, OperandTwo, Result]
 def GenerateExpQuadruple():
-    print("operandStack1", operandStack)
     operator = operatorStack.pop()
     operandTwo = operandStack.pop()
-    operandOne = operandStack.pop()
-    
-    print("operator, operandOne, operandTwo", operator, operandOne, operandTwo)
-    
+    operandOne = operandStack.pop()  
+   
     result = SemanticCube.SearchSemanticCube(operator, operandOne[0], operandTwo[0])
-    print("result", result)
+    
     if (result != -1):
         if(operator != '='):
             quadruples.append([operator, operandOne[1], operandTwo[1], Settings.memoryMap[1][1][result]])
             operandStack.append((result, Settings.memoryMap[1][1][result])) #Second position would be the temporal name?
-            print("operandStack2", operandStack)
             Settings.memoryMap[1][1][result] = Settings.memoryMap[1][1][result] + 1
         else:
             quadruples.append([operator, operandOne[1], None, operandTwo[1]])
     else:
         print("Error: Cannot %s (%s, %s)" % (operator, invOpMap[operandOne[0]], invOpMap[operandTwo[0]]))
-        sys.exit()
+        sys.exit() 
+
+# TODO
+# TODO 
+# TODO
+def GenerateArrayAccessQuadruple():
+    operator = operatorStack.pop()
+    operand = operandStack.pop()
+    quadruples.append([operator, operand[1], None, Settings.memoryMap[1][1][0]])
+    operandStack.append((0, Settings.memoryMap[1][1][0])) #Second position would be the temporal name?
+    Settings.memoryMap[1][1][0] = Settings.memoryMap[1][1][0] + 1
 
 # GenerateOutputQuadruple
 # This creates a console output quadruple 
@@ -158,7 +164,7 @@ def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
             sys.exit()
         quadruples.append(['PAR', index, None, parameter[1]])
     quadruples.append(['GOSUB', None, None, functionSignatue[1]])
-    print("functionSignatue", functionSignatue)
+
     if(functionSignatue[0] == 4):
         return (functionSignatue[0], None)
     else:
