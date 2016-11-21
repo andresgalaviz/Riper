@@ -39,4 +39,6 @@ main() {
     console(hola[9][9]);
     string test = hola[9][9] + ' mundo';
     console(test);
+    arr[10][10] = arr[11][11]*arr[11][11];
+    console(arr[10][10]);
 }
