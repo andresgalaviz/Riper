@@ -1,0 +1,36 @@
+array int arrayGlobal[10];
+
+function void BubbleSort(){
+    int i = 0;
+    int j = 0;
+    int aux = 0;
+    for(i < 10; i = i + 1;){
+        j = 0;
+        for(j < (10 - i - 1); j = j + 1;){
+            console(arrayGlobal[j],arrayGlobal[j+1],arrayGlobal[j] > arrayGlobal[j+1]);
+            if(arrayGlobal[j] > arrayGlobal[j+1]){
+                aux = arrayGlobal[j];
+                arrayGlobal[j] = arrayGlobal[j+1];
+                arrayGlobal[j+1] = aux;
+            }
+        }
+    }
+}
+
+main() {
+    int i = 0;
+    int j = 10;
+    console('Unsorted');
+    for(i < 10; i = i + 1;){
+        arrayGlobal[i] = j;
+        j = j - 1;
+        console(arrayGlobal[i]);
+    }
+    BubbleSort();
+    console('Sorted');
+    i = 0;
+    for(i < 10; i = i + 1;){
+        console(arrayGlobal[i]);
+    }
+
+}

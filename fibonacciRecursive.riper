@@ -1,0 +1,13 @@
+function int Fibonacci(int num) {
+    if(num == 1) {
+        return 1;
+    }
+    elif(num == 0) {
+        return 0;
+    }
+    return Fibonacci(num - 1) + Fibonacci(num - 2);
+}
+
+main() {
+    console(Fibonacci(Fibonacci(7)));
+}

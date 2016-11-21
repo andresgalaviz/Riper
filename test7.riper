@@ -12,4 +12,9 @@ function int Num(int a) {
 
 main() {
     console(Num(22));
+    array int arr [10][10][10];
+    arr[8][8][9] = 13;
+    arr[8][8][8] = 10;
+    arr[9][9][9] = arr[8][8][8] * arr[8][8][8];
+    console(arr[9][9][9]);
 }
