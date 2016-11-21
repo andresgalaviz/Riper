@@ -112,17 +112,6 @@ def p_type(p):
 #     # global expCount
 #     # expCount += 1
 
-def p_moreArray(p):
-    '''moreArray : nextArray moreArray
-        | '''
-
-def p_nextArray(p):
-    '''nextArray :  ',' ID '[' INT ']' moreArrayDimensions '''
-    # global expCount
-    # if (int(p[4][1]) != expCount):
-    #     print("ERROR, the size of array ", p[2], " is different from the amount of contents declared")
-    #     sys.exit()
-    # expCount = 0;
   
 def p_function(p):
   '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
@@ -682,6 +671,10 @@ currentArraySignature = None
 
 prevArraySums = []
 currentArraySum = 0
+
+def p_moreArray(p):
+    '''moreArray : ',' array moreArray
+        | '''
 
 def p_arrayAccess(p):
     '''arrayAccess : startArrayAccess '[' calculateAddress dimensionAccess '''
