@@ -628,7 +628,7 @@ def p_array(p):
     print("R", R)
     for idx in range(len(arrDimensionDeclaration)):
         R = R/arrDimensionDeclaration[idx][0]
-        print R
+        
         if(R not in constantDirectory):
             constantDirectory[R] = globalMemoryMap[1][0]
             globalMemoryMap[1][0] = globalMemoryMap[1][0] + 1
@@ -785,7 +785,7 @@ if __name__ == '__main__':
             RiperParser.parse(data, debug = False, tracking=True)
             print('This is a correct and complete Riper program');
             quadrupleNumber = 0;
-            print Settings.globalDirectory
+            
             for quadruple in quadruples:
                 print("%s \t %s" % (quadrupleNumber, quadruple))
                 quadrupleNumber += 1

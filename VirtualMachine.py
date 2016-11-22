@@ -8,7 +8,7 @@ ops = {
     "+*" : operator.add,
     "-" : operator.sub,
     "*" : operator.mul,
-    "/" : operator.div,
+    "/" : operator.truediv,
     "%" : operator.mod,
     "&&" : operator.and_,
     "||" : operator.or_,
@@ -95,7 +95,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
 
         #input: parses the input to the specified type and saves value to address
         elif (quadruple[0] == 'INPUT'):
-            value = quadruple[1]
+            value = input(quadruple[1])
             if(quadruple[2] == 0):
                 try:
                     #Can not cast a STRING in float format directly to int, so double cast is used
@@ -120,7 +120,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
 
         #Console: prints value from address
         elif (quadruple[0] == 'console'):
-            print programMemory.getValueFromAddress(programMemory.getValueFromAddress(quadruple[3][0]) if isinstance(quadruple[3], list) else quadruple[3])
+            print(programMemory.getValueFromAddress(programMemory.getValueFromAddress(quadruple[3][0]) if isinstance(quadruple[3], list) else quadruple[3]))
             currentQuadruple += 1
 
         #Arithmetic: executes operation based on the operator received, saves resultant value to address
@@ -134,7 +134,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
                                                quadruple[2][0] if isinstance(quadruple[2], list) else programMemory.getValueFromAddress(quadruple[2])), 
                                                quadruple[3])
             currentQuadruple += 1
-            
+
         # Logic: executes operation based on the operator received, saves resultant value to address
         elif(quadruple[0] in ['<', '<=', '>', '>=', '==', '!=', '&&', '||']):
             programMemory.assignValueToAddress(ops[quadruple[0]](
