@@ -50,13 +50,13 @@ class Memory:
                     elif(dataCount == memorySettings[scopeId][dataCountId] + scopeSize):
                          self.memory[(dataCount - firstPosition - 1) / scopeSize % 4].append((dataCount - memorySettings[scopeId][dataCountId]) * [None])        
                     else:
-                        self.memory[(dataCount - firstPosition) / scopeSize % 4].append((dataCount - memorySettings[scopeId][dataCountId]) * [None])
+                        self.memory[(dataCount - firstPosition) // scopeSize % 4].append((dataCount - memorySettings[scopeId][dataCountId]) * [None])
                     #(dataCount - memorySettings[scopeId][dataCountId]) * [None]
                     #((dataCount - firstPosition) % scopeSize) * [None]
 
     def assignConstants(self, constantDirectory):
         for value,virtualAddress in constantDirectory.items():
-            self.memory[(virtualAddress - firstPosition) / scopeSize % 4][(virtualAddress - firstPosition) / varSize][(virtualAddress - firstPosition) % scopeSize] = value
+            self.memory[(virtualAddress - firstPosition) // scopeSize % 4][(virtualAddress - firstPosition) // varSize][(virtualAddress - firstPosition) % scopeSize] = value
         self.memory[3][3][0] = True
         self.memory[3][3][1] = False
 
@@ -113,7 +113,7 @@ class Memory:
 
 
     def getValueFromAddress(self, virtualAddress):
-        return self.memory[(virtualAddress - firstPosition) / scopeSize % 4][(virtualAddress - firstPosition) / varSize][(virtualAddress - firstPosition) % scopeSize]
+        return self.memory[(virtualAddress - firstPosition) // scopeSize % 4][(virtualAddress - firstPosition) // varSize][(virtualAddress - firstPosition) % scopeSize]
 
     def assignValueToAddress(self, result, virtualAddress):
         global memorySettings
@@ -121,4 +121,4 @@ class Memory:
             result = int(result)
         elif (virtualAddress < memorySettings[0][2]):
             result = float(result)
-        self.memory[(virtualAddress - firstPosition) / scopeSize % 4][(virtualAddress - firstPosition) / varSize][(virtualAddress - firstPosition) % scopeSize] = result
+        self.memory[(virtualAddress - firstPosition) // scopeSize % 4][(virtualAddress - firstPosition) // varSize][(virtualAddress - firstPosition) % scopeSize] = result
