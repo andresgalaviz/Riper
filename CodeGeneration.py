@@ -89,12 +89,13 @@ def AppendConditionalCountStack():
     conditionalCountStack.append(0)
 
 # IncreaseConsitionalCountStack
-# Ricky comment this
+# Used to increase the conditionCount for each elif
 def IncreaseConsitionalCountStack():
     conditionalCountStack[-1] += 1
 
 # GenerateGotofQuadruple
 # Generates empty GotoF, appends position to jumpStack
+# Quadruple signature: [GotoF, operand[1], None, None]
 def GenerateGotofQuadruple():
     operand = operandStack.pop()
     
@@ -107,6 +108,7 @@ def GenerateGotofQuadruple():
 
 # GenerateGototQuadruple
 # Generates full GotoT, pops and uses last position of jumpStack
+# Quadruple signature: [GotoT, operand[1], None, quadruplePosition]
 def GenerateGototQuadruple():
     operand = operandStack.pop()
     if (operand[0] != 3):
@@ -115,22 +117,29 @@ def GenerateGototQuadruple():
     else:
         quadruples.append(['GotoT', operand[1], None, jumpStack.pop()])
 
+# GenerateGotoQuadruple
 # Generates empty Goto, appends position to jumpStack
+# Quadruple signature: [Goto, None, None, None]
 def GenerateGotoQuadruple():
     jumpStack.append(len(quadruples))
     quadruples.append(['Goto', None, None, None])
 
-# Generates empty Goto, appends position to jumpStack
+
+# GenerateGotoMainQuadruple
+# Generates empty GotoMain, appends position to jumpStack
+# Quadruple signature: [GotoMain, None, None, None]
 def GenerateGotoMainQuadruple():
     jumpStack.append(len(quadruples))
     quadruples.append(['GotoMain', None, None, None])
 
 
+# CompleteQuadruple
 # Completes info of the quadruple in position jumpPos of the jumpStack
 def CompleteQuadruple(jumpPos, quadruplePos):
     quadruples[jumpStack.pop(jumpPos)][3] = len(quadruples) + quadruplePos
 
 
+# CompleteGotoQuadruples
 # In conditionals, completes all the empty Goto from the elifs pending
 def CompleteGotoQuadruples():
     while(conditionalCountStack[-1] > 0):
@@ -139,20 +148,27 @@ def CompleteGotoQuadruples():
     conditionalCountStack.pop()
 
 
+# AppendJump
 # Adds current quadruple position to the jumpStack
 def AppendJump():
     jumpStack.append(len(quadruples))
 
 
+# GotoJump
 # Generates a Goto by poping and using position jumpPos of the jumpStack
 def GotoJump(jumpPos):
     quadruples.append(['Goto', None, None, jumpStack.pop(jumpPos)])
 
+# GenerateParInQuadruple
 # Generates the parameters into function quadruples
+# Quadruple signature: [PARAMETER, operand, None, parnum]
 def GenerateParInQuadruple(parnum):
     operand = operandStack.pop()
     quadruples.append(['PARAMETER', operand, None, parnum])
 
+
+# GenerateFuncCallQuadruples
+# Generates the ERA, PAR and GOSUB quadruples, validating the arguments
 def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
     quadruples.append(['ERA', None, None, functionName])
     if(len(parameterList) != len(functionSignatue[4])):

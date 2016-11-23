@@ -737,7 +737,7 @@ if __name__ == '__main__':
     RiperParser.parse(data, debug = False, tracking=True)
     
     quadrupleNumber = 0;
-    if(sys.argv[2][-1] == 'quadruples'):
+    if(sys.argv[3] == 'quadruples'):
         for quadruple in quadruples:
             print("%s \t %s" % (quadrupleNumber, quadruple))
             quadrupleNumber += 1
