@@ -25,8 +25,7 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
 
     currentQuadruple = 0
     returnStack = []
-    print("\nGLOBAL DIRECTORY\n")
-    print(globalDirectory)
+
     #Initialize global memory required  
     globalMemoryMap.insert(1, globalTemporals)
     globalMemoryMap.insert(1, None)
@@ -36,7 +35,6 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
     programMemory.assignConstants(constantDirectory)
 
     #Iterate through the quadruples
-    print("\nSTART EXECUTION\n")
     while quadruples[currentQuadruple][0] != 'RIP':
         quadruple = quadruples[currentQuadruple]
              
@@ -158,4 +156,3 @@ def Execute(globalMemoryMap, globalTemporals, globalDirectory, quadruples, const
             else:
                 print("Array out of bounds: ", programMemory.getValueFromAddress(quadruple[1]), quadruple[3])
                 sys.exit()
-    print("\nFINISHED EXECUTION\n")
