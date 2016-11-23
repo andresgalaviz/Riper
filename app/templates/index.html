@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Blockly Demo: Fixed Blockly</title>
+  <script src= "{{ url_for('static', filename='blockly_compressed.js') }}"></script>
+  <script src= "{{ url_for('static', filename='javascript_compressed.js') }}"></script>
+  
+  <script src= "{{ url_for('static', filename='riper/riper_code_blocks.js') }}"></script>
+  <script src= "{{ url_for('static', filename='riper/riper_design_blocks.js') }}"></script>
+
+  <script src= "{{ url_for('static', filename='msg/js/en.js') }}"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+  <style>
+    body {
+      background-color: #fff;
+      font-family: sans-serif;
+    }
+    h1 {
+      font-weight: normal;
+      font-size: 140%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Riper</h1>
+  Program Name: <input type="text" name="pcode" id="pname" ><br>
+  <p><button onclick="showCode()">Show Riper</button>
+  <button onclick="saveWorkspace()">Save Riper</button>
+  <button onclick="loadWorkspace()">Load Riper</button>
+  <button onclick="runCode()">Run Riper</button></p>
+  <div id="blocklyDiv" style="height: 800px; width: 1200px;"></div>
+
+<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
+  <category name="Lógica" colour="#5b80a5">
+    <block type="if"></block>
+    <block type="else"></block>
+    <block type="else_if"></block>
+    <block type="expression">
+      <field name="operator">&lt;</field>
+    </block>
+  </category>
+  <category name="Funciones" colour="#a55b6d">
+    <block type="function">
+      <field name="type">int</field>
+      <field name="function_name">nombre</field>
+    </block>
+    <block type="main"></block>
+    <block type="function_call">
+      <field name="function_name">nombre</field>
+    </block>
+    <block type="function_call_atomic">
+      <field name="function_name">nombre</field>
+    </block>
+    <block type="parameters_input"></block>
+    <block type="function_parameter">
+      <field name="type">int</field>
+      <field name="value_name">nombre</field>
+    </block>
+  </category>
+  <category name="Variables" colour="#80a55b">
+    <block type="var_declaration">
+      <field name="type">int</field>
+      <field name="var_name">nombre</field>
+    </block>
+    <block type="var_assign">
+      <field name="var_name">variable</field>
+    </block>
+    <block type="array_declaration">
+      <field name="type">int</field>
+      <field name="array_name">nombre</field>
+      <field name="array_dimensions">[1][2]</field>
+    </block>
+    <block type="array_access">
+      <field name="array_name">nombre</field>
+      <field name="array_indexes">[0][0]</field>
+    </block>
+    <block type="var_access">
+      <field name="var_name">nombre</field>
+    </block>
+    <block type="var_access_list">
+      <field name="variable_name">nombre</field>
+    </block>
+    <block type="array_assign">
+      <field name="array_name">nombre</field>
+      <field name="array_indexes">[0][0]</field>
+    </block>
+  </category>
+  <category name="Constantes" colour="#5ba56d">
+    <block type="bool_constant">
+      <field name="bool_value">true</field>
+    </block>
+    <block type="int_constant">
+      <field name="int_constant">0</field>
+    </block>
+    <block type="float_constant">
+      <field name="int_part">0</field>
+      <field name="decimal_part">0</field>
+    </block>
+    <block type="string_constant">
+      <field name="string_constant">'ejemplo'</field>
+    </block>
+  </category>
+  <category name="Ciclos" colour="#805ba5">
+    <block type="for_loop">
+      <field name="for_expression">i = 0</field>
+      <field name="for_increment">i = i +1</field>
+    </block>
+    <block type="while_loop">
+      <field name="while_expression">i &lt; 10</field>
+    </block>
+    <block type="do_while">
+      <field name="do_while_expression">i &lt; 10</field>
+    </block>
+  </category>
+  <category name="Estatutos" colour="#a55b6d">
+    <block type="console"></block>
+    <block type="input">
+      <field name="input_message">'Dame un número'</field>
+    </block>
+    <block type="return"></block>
+  </category>
+</xml>
+
+  <script>
+    var workspace = Blockly.inject('blocklyDiv',
+        {media: '../../media/',
+         toolbox: document.getElementById('toolbox')});
+         
+    function showCode() {
+      // Generate JavaScript code and display it.
+      Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+      var code = Blockly.JavaScript.workspaceToCode(workspace);
+      alert(code);
+    }
+    
+    function runCode() {
+      // Generate JavaScript code and run it.
+      window.LoopTrap = 1000;
+      Blockly.JavaScript.INFINITE_LOOP_TRAP =
+          'if (--window.LoopTrap == 0) throw "Infinite loop.";\n';
+      var code = Blockly.JavaScript.workspaceToCode(workspace);
+      Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+      
+      $.ajax({
+            type : "POST",
+            url : "/riper",
+            dataType: "text",
+            data: {code: JSON.stringify(code)},
+            success: function(result) {
+                alert(result);
+            }
+      });
+    }
+    function saveWorkspace() {
+        var xmlDom = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
+        var xmlText = Blockly.Xml.domToPrettyText(xmlDom);
+        var name = document.getElementById('pname');
+        localStorage.setItem(name.value, xmlText);
+    }
+
+    function loadWorkspace() {
+        var name = document.getElementById('pname');
+        var xmlText = localStorage.getItem(name.value);
+        if (xmlText) {
+            Blockly.mainWorkspace.clear();
+            xmlDom = Blockly.Xml.textToDom(xmlText);
+            Blockly.Xml.domToWorkspace(xmlDom, Blockly.mainWorkspace);
+        }
+    }
+  </script>
+
+</body>
+</html>

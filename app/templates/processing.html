@@ -1,0 +1,23 @@
+<html>
+<head>
+
+<script src= "{{ url_for('static', filename='jquery-3.1.1.min.js') }}"></script>
+<script>
+    function ajaxCallback(data) {
+        if (data.done) {
+            window.location.replace("http://www.google.com");
+            console.log("Done");
+        } else{
+            window.setTimeout(function() {
+                $.getJSON('{{ url_for('is_done') }}', {id: '{{ id }}' }, ajaxCallback);
+            }, 3000);
+    }
+    }
+    $(document).ready(function(){
+        ajaxCallback({done: false});
+    });
+</script>
+</head>
+<body>
+    Processing...
+</body></html>

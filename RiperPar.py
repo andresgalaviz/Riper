@@ -717,22 +717,28 @@ def p_error(p):
 
   # Build the parser
 RiperParser = yacc.yacc(debug=False, write_tables=False)
-if __name__ == '__main__':
-    if (len(sys.argv) > 1):
-        file = sys.argv[1]
-        try:
-            f = open(file,'r')
-            data = f.read()
-            f.close()
-            RiperParser.parse(data, debug = False, tracking=False)
-            quadrupleNumber = 0;
-            if(len(sys.argv) > 2 and sys.argv[2] == 'quadruples'):
-                for quadruple in quadruples:
-                    print("%s \t %s" % (quadrupleNumber, quadruple))
-                    quadrupleNumber += 1
-            Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
 
-        except EOFError:
-            print(EOFError)
+def Run(data):
+    RiperParser.parse(data, debug = False, tracking=True)
+    quadrupleNumber = 0;
+    if(len(sys.argv) > 2 and sys.argv[2] == 'quadruples'):
+        for quadruple in quadruples:
+            print("%s \t %s" % (quadrupleNumber, quadruple))
+            quadrupleNumber += 1
+    Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
+
+if __name__ == '__main__':
+    if(sys.argv[1][0] == '#'):
+        data = sys.argv[2][:-1]
     else:
-        print('File missing')
+        f = open(sys.argv[2],'r')
+        data = f.read()
+        f.close()
+    RiperParser.parse(data, debug = False, tracking=True)
+    
+    quadrupleNumber = 0;
+    if(sys.argv[2][-1] == 'quadruples'):
+        for quadruple in quadruples:
+            print("%s \t %s" % (quadrupleNumber, quadruple))
+            quadrupleNumber += 1
+    Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
