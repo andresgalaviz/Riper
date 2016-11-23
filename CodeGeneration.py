@@ -172,7 +172,7 @@ def GenerateFuncCallQuadruples(functionName, functionSignatue, parameterList):
         Settings.memoryMap[1][1][functionSignatue[0]] = Settings.memoryMap[1][1][functionSignatue[0]] + 1
         return (functionSignatue[0], Settings.memoryMap[1][1][functionSignatue[0]] - 1)
 
-# Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
+# Used to generate the RETURN quadruple
 def GenerateReturnProcQuadruple(functionName):
     operand = operandStack.pop()
     if(currentFuncType != operand[0]):
@@ -181,7 +181,7 @@ def GenerateReturnProcQuadruple(functionName):
         sys.exit()
     quadruples.append(['RETURN', operand[1], None, Settings.globalDirectory.get(functionName)[3]])
 
-# Used to generate the last quadruple of the RIPER language, signals the VM to terminate execution
+# Used to generate ENDPROC quadruple
 def GenerateEndProcQuadruple():
     quadruples.append(['ENDPROC', None, None, None])
 

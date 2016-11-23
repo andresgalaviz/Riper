@@ -54,12 +54,14 @@ class Memory:
                     #(dataCount - memorySettings[scopeId][dataCountId]) * [None]
                     #((dataCount - firstPosition) % scopeSize) * [None]
 
+    #Assigns the space requried for the constants with its value.
     def assignConstants(self, constantDirectory):
         for value,virtualAddress in constantDirectory.items():
             self.memory[(virtualAddress - firstPosition) // scopeSize % 4][(virtualAddress - firstPosition) // varSize][(virtualAddress - firstPosition) % scopeSize] = value
         self.memory[3][3][0] = True
         self.memory[3][3][1] = False
 
+    #Assigns main memory
     def assignMainMemory(self, mainDirectory):
         count = 0
         for scope in mainDirectory:
@@ -71,6 +73,7 @@ class Memory:
                     sys.exit()
                 self.memory[count].append(dataCount * [None])
 
+    #Assigns memory for function
     def assignFunctionMemory(self, functionDirectory):
         #The 0 created in the first position will be the parameter position counter
         self.newMemory = [0,[],[]]
@@ -83,7 +86,7 @@ class Memory:
                     sys.exit()
                 self.newMemory[count].append(dataCount * [None])
             
-
+    #Pases parameter to memory assigned for function
     def assignParameterToNewMemory(self, result, virtualAddress):
         if (virtualAddress < Settings.globalMemoryMap[0][1]):
             result = int(result)
@@ -99,6 +102,7 @@ class Memory:
         self.newMemory[1][pos][self.newMemory[0]] = result
         self.newMemory[0] += 1
 
+    #Saves memory in stack to use the new memory
     def switchToNewMemory(self):
         self.memoryStack.append(self.memory[1])
         self.memoryStack.append(self.memory[2])
@@ -106,15 +110,17 @@ class Memory:
         self.memory[2] = self.newMemory[2]
         self.newMemory =None
 
+    #Pops from stack the memory
     def recoverMemory(self):
         self.memory[2] = self.memoryStack.pop()
         self.memory[1] = self.memoryStack.pop()
 
 
-
+    #Gets value from virtual address
     def getValueFromAddress(self, virtualAddress):
         return self.memory[(virtualAddress - firstPosition) // scopeSize % 4][(virtualAddress - firstPosition) // varSize][(virtualAddress - firstPosition) % scopeSize]
 
+    #Assigns value to position of virtal address
     def assignValueToAddress(self, result, virtualAddress):
         global memorySettings
         if (virtualAddress < memorySettings[0][1]):
