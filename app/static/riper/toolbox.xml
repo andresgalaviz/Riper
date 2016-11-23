@@ -1,0 +1,87 @@
+<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
+  <category name="Lógica" colour="#5b80a5">
+    <block type="if"></block>
+    <block type="else"></block>
+    <block type="else_if"></block>
+    <block type="expression">
+      <field name="operator">&lt;</field>
+    </block>
+  </category>
+  <category name="Funciones" colour="#a55b6d">
+    <block type="function">
+      <field name="type">int</field>
+      <field name="function_name">nombre</field>
+    </block>
+    <block type="main"></block>
+    <block type="function_call">
+      <field name="function_name">nombre</field>
+    </block>
+    <block type="function_call_atomic">
+      <field name="function_name">nombre</field>
+    </block>
+    <block type="parameter_input"></block>
+    <block type="function_parameter">
+      <field name="type">int</field>
+      <field name="value_name">nombre</field>
+    </block>
+  </category>
+  <category name="Variables" colour="#80a55b">
+    <block type="var_declaration">
+      <field name="type">int</field>
+      <field name="var_name">nombre</field>
+    </block>
+    <block type="var_assign">
+      <field name="var_name">variable</field>
+    </block>
+    <block type="array_declaration">
+      <field name="type">int</field>
+      <field name="array_name">nombre</field>
+      <field name="array_dimensions">[1][2]</field>
+    </block>
+    <block type="array_access">
+      <field name="array_name">nombre</field>
+      <field name="array_indexes">[0][0]</field>
+    </block>
+    <block type="var_access">
+      <field name="var_name">nombre</field>
+    </block>
+    <block type="array_assign">
+      <field name="array_name">nombre</field>
+      <field name="array_indexes">[0][0]</field>
+    </block>
+  </category>
+  <category name="Constantes" colour="#5ba56d">
+    <block type="bool_constant">
+      <field name="bool_value">true</field>
+    </block>
+    <block type="int_constant">
+      <field name="int_constant">0</field>
+    </block>
+    <block type="float_constant">
+      <field name="int_part">0</field>
+      <field name="decimal_part">0</field>
+    </block>
+    <block type="string_constant">
+      <field name="string_constant">'ejemplo'</field>
+    </block>
+  </category>
+  <category name="Ciclos" colour="#805ba5">
+    <block type="for_loop">
+      <field name="for_expression">i = 0</field>
+      <field name="for_increment">i = i +1</field>
+    </block>
+    <block type="while_loop">
+      <field name="while_expression">i &lt; 10</field>
+    </block>
+    <block type="do_while">
+      <field name="do_while_expression">i &lt; 10</field>
+    </block>
+  </category>
+  <category name="Estatutos" colour="#a55b6d">
+    <block type="console"></block>
+    <block type="input">
+      <field name="input_message">'Dame un número'</field>
+    </block>
+    <block type="return"></block>
+  </category>
+</xml>
