@@ -62,9 +62,9 @@ def GenerateExpQuadruple():
         print("Error: Cannot %s (%s, %s)" % (operator, invOpMap[operandOne[0]], invOpMap[operandTwo[0]]))
         sys.exit() 
 
-# TODO
-# TODO 
-# TODO
+# GenerateArrayAccessQuadruple
+# Used to create the access quadruple for array indices 
+# [operator, operand[1], None, Settings.memoryMap[1][1][0]]]
 def GenerateArrayAccessQuadruple():
     operator = operatorStack.pop()
     operand = operandStack.pop()
@@ -188,7 +188,6 @@ def GenerateEndProcQuadruple():
 # Used to generate the input quadruple when assigning to a variable, assumes we will introduce the same
 # valuetype. This will be verified or terminated in execution
 def GenerateInputQuadruple(message, inputType):
-    print("Enter GenerateInputQuadruple")
     quadruples.append(['INPUT', message, inputType, Settings.memoryMap[1][1][inputType]])
     operandStack.append((inputType, Settings.memoryMap[1][1][inputType]))
     Settings.memoryMap[1][1][inputType] = Settings.memoryMap[1][1][inputType] + 1
