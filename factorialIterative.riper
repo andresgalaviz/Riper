@@ -1,0 +1,19 @@
+function int Factorial(int num) {
+    int a = 1;
+    int b = 2;
+    if (num <= 1) {
+        return 1;
+    }
+    while (b <= num) {
+        a = b * a;
+        b = b + 1;
+    }
+    return a;
+}
+
+main() {
+    console(Factorial(5));
+}
+
+
+
