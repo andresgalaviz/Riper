@@ -12,6 +12,11 @@ import Settings
 from time import time
 from VirtualMachine import *
 
+# Variables needed for array index calculation
+global R
+R = 1
+global arrDimensionDeclaration
+arrDimensionDeclaration = []
 
 # import the lexical tokens
 tokens = RiperLex.tokens
@@ -103,16 +108,6 @@ def p_type(p):
         global currentType
         currentType = opMap[p[1]]
     
-# def p_moreExp(p):
-#     '''moreExp : ',' expression sumExpCount moreExp
-#         | '''
-
-# def p_sumExpCount(p):
-#     '''sumExpCount : '''
-#     # global expCount
-#     # expCount += 1
-
-  
 def p_function(p):
   '''function : FUNCTION funcType idStartFunction '(' par ')' '{' block '}' '''
   
@@ -225,12 +220,10 @@ def p_funcCall(p):
         sys.exit()
 
     p[0] = GenerateFuncCallQuadruples(p[1], matchedID, currentParameterList)
-
     currentParameterList = []
     operatorStack.pop()
     if(parameterList):
         currentParameterList = parameterList.pop()
-        print("Printing from parameter list", currentParameterList)
 
 def p_verifyParameterStack(p):
     '''verifyParameterStack : '''
@@ -238,7 +231,6 @@ def p_verifyParameterStack(p):
     global parameterList
     operatorStack.append('(')
     if(currentParameterList):
-        print("Saving currentParameterList")
         parameterList.append(currentParameterList)
         currentParameterList = []
     
@@ -255,7 +247,6 @@ def p_parameter(p):
     '''parameter : expression'''
     global currentParameterList
     global parameterList
-    
     parameter = operandStack.pop()
     currentParameterList.append(parameter)
 
@@ -268,7 +259,6 @@ def p_block(p):
         | output block
         | returnType block
         | '''
-
 
 def p_blockMain(p):
     '''blockMain : varDeclar blockMain
@@ -287,7 +277,6 @@ def p_loopBlock(p):
         | output loopBlock
         | returnType loopBlock
         | '''
-  
 
 def p_assign(p):
     '''assign : possibleArray '=' expressionInput ';' '''
@@ -305,11 +294,7 @@ def p_assign(p):
                 matchedDataType = (matchedDataType[1], matchedDataType[2])
         else:
             matchedDataType = (matchedDataType[1], matchedDataType[2])
-        
-        # Continue here
-        print("matchedDataType[1] + p[2]", matchedDataType[1], p[2])
-    
-    print("matchedDataType, assign", matchedDataType)
+            
     operandStack.append(matchedDataType)
     operatorStack.append(p[2])
     GenerateExpQuadruple()
@@ -324,104 +309,83 @@ def p_possibleArray(p):
                      | arrayAccess'''
     p[0] = p[1]
     
-
 def p_conditional(p):
     '''conditional : IF appendConditionalCountStack '(' gotofIfExpression ')' '{' block '}' possibleElif possibleElse completeGotoQuadruples '''
-
 
 def p_appendConditionalCountStack(p):
     '''appendConditionalCountStack : '''
     AppendConditionalCountStack()
-
 
 def p_gotofIfExpression(p):
     '''gotofIfExpression : expression '''
     IncreaseConsitionalCountStack()
     GenerateGotofQuadruple()
 
-
 def p_possibleElif(p):
     '''possibleElif : ELIF '(' completeQuadruplePlus1 generateGoto gotofIfExpression ')' '{' block '}' possibleElif
         | '''
-
 
 def p_completeQuadruplePlus1(p):
     ''' completeQuadruplePlus1 : '''
     CompleteQuadruple(-1, 1)
 
-
 def p_completeGotoQuadruples(p):
     '''completeGotoQuadruples : '''
     CompleteGotoQuadruples()
-
 
 def p_possibleElse(p):
     '''possibleElse : ELSE completeQuadruplePlus1 generateGoto '{' block '}' 
         | '''
 
-
 def p_generateGoto(p):
     '''generateGoto : '''
     GenerateGotoQuadruple()
 
-
 def p_output(p):
     '''output : CONSOLE '(' outputExpression possibleOutputExpressions ')' ';' '''
-
 
 def p_outputExpression(p):
     '''outputExpression : expression '''
     GenerateOutputQuadruple()
 
-
 def p_possibleOutputExpressions(p):
     '''possibleOutputExpressions : ',' outputExpression possibleOutputExpressions
     | '''
   
-
 def p_loop(p):
     '''loop : for
         | while
         | doWhile '''
   
-
 def p_for(p):
     '''for : FOR '(' appendJump gotofForExpression generateGoto ';' appendJump assign gotoJumpMinus4 ')' '{' completeQuadrupleJumpMinus2 loopBlock gotoJump completeQuadruple '}' '''
-
 
 def p_completeQuadruple(p):
     '''completeQuadruple : '''
     CompleteQuadruple(-1, 0)
 
-
 def p_gotofForExpression(p):
     '''gotofForExpression : expression'''
     GenerateGotofQuadruple()
-
 
 def p_gotoJumpMinus4(p):
     '''gotoJumpMinus4 : '''
     GotoJump(-4)
 
-
 def p_completeQuadrupleJumpMinus2(p):
     '''completeQuadrupleJumpMinus2 : '''
     CompleteQuadruple(-2, 0)
 
-
 def p_while(p):
     '''while : WHILE '(' appendJump expression gotofWhileExpression ')' '{' loopBlock completeQuadruplePlus1 gotoJump '}' '''
-
 
 def p_gotofWhileExpression(p):
     '''gotofWhileExpression : '''
     GenerateGotofQuadruple()
 
-
 def p_gotoJump(p):
     '''gotoJump : '''
     GotoJump(-1)
-  
 
 def p_doWhile(p):
     '''doWhile : DO appendJump '{' loopBlock '}' WHILE '(' gototExpression ')' ';' '''
@@ -431,11 +395,9 @@ def p_appendJump(p):
     '''appendJump : '''
     AppendJump()
 
-
 def p_gototExpression(p):
     '''gototExpression : expression '''
     GenerateGototQuadruple()
-
 
 def p_expression(p):
     '''expression : higherExp1 possibleHigherExp1'''
@@ -444,7 +406,6 @@ def p_expression(p):
 def p_possibleHigherExp1(p):
     '''possibleHigherExp1 : operatorOR higherExp1 possibleHigherExp1
         | '''
-
 
 def p_operatorOR(p):
     '''operatorOR : OR '''
@@ -577,8 +538,6 @@ def p_rPar(p):
     if (len(operatorStack) > 0 and operatorStack[-1] in ['*', '/', '%']):
         GenerateExpQuadruple()
 
-  
-
 def p_data(p):
     '''data : constant
         | ID 
@@ -605,7 +564,6 @@ def p_data(p):
     else: 
         variableTuple = p[1]
     
-    # p[0] = p[1]
     if(debugParser):
         print("PUSHING OPERAND ", variableTuple)  
     operandStack.append(variableTuple)
@@ -614,10 +572,6 @@ def p_data(p):
 def p_arrays(p):
     '''arrays : array moreArray '''
 
-global R
-R = 1
-global arrDimensionDeclaration
-arrDimensionDeclaration = []
 # Array grammar declaration
 def p_array(p):
     '''array : type ID '[' calculateR moreArrayDimensions '''
@@ -625,7 +579,6 @@ def p_array(p):
     global R
     global arrDimensionDeclaration
     arraySize = R
-    print("R", R)
     for idx in range(len(arrDimensionDeclaration)):
         R = R/arrDimensionDeclaration[idx][0]
         
@@ -641,25 +594,19 @@ def p_array(p):
         sys.exit()
     else:
         localDirectory[p[2]] = (0, currentType, Settings.memoryMap[insideFunction[0]][0][currentType], arrDimensionDeclaration)
-        print("Settings.memoryMap[insideFunction[0]][0][currentType]", p[2], Settings.memoryMap[insideFunction[0]][0][currentType])
         Settings.memoryMap[insideFunction[0]][0][currentType] = Settings.memoryMap[insideFunction[0]][0][currentType] + arraySize
-        print("Settings.memoryMap[insideFunction[0]][0][currentType]", arraySize, Settings.memoryMap[insideFunction[0]][0][currentType])
     arrDimensionDeclaration = []
 
 
 def p_moreArrayDimensions(p):
     '''moreArrayDimensions : '[' calculateR moreArrayDimensions
                            | '''
-    if(len(p) > 1):
-        print(p[2])
 
 def p_calculateR(p):
     '''calculateR : INT ']' '''
     global R
     global arrDimensionDeclaration
-    print('calculateRR', R)
     R = R * p[1][1]
-    print('calculateRR', R)
     arrDimensionDeclaration.append([p[1][1], None])
 
 global arrDimensions
@@ -711,7 +658,6 @@ def p_startArrayAccess(p):
         else:
             print("ERROR, array variable ", p[1], " has not been declared")
             sys.exit()
-        print("currentArraySignature", currentArraySignature)
         arrDimensions = 0
     operatorStack.append('(')
     p[0] = p[1]
@@ -721,11 +667,9 @@ def p_calculateAddress(p):
     global arrDimensions
     global currentArraySum
     global currentArraySignature
-    print("arrDimensions", currentArraySignature[3][arrDimensions][1])
     quadruples.append(["VER", operandStack[-1][1], 0, currentArraySignature[3][arrDimensions][0]])
     operatorStack.append('*')
     operandStack.append((0, currentArraySignature[3][arrDimensions][1]))
-    print("operandStack", operandStack)
     GenerateExpQuadruple()
     if(arrDimensions > 0):
         operatorStack.append('+')
@@ -755,9 +699,7 @@ def p_constant(p):
 
 def p_input(p):
     '''input : INPUT '(' inputPar ')' '''  
-    # TODO: This should not be hardcoded?
     p[0] = (0, 'INPUT', p[1])
-    print("currentType", currentType)
     GenerateInputQuadruple(p[3][1], currentType)
     
 
@@ -774,27 +716,29 @@ def p_error(p):
     sys.exit()
 
   # Build the parser
-RiperParser = yacc.yacc()
-if __name__ == '__main__':
-    if (len(sys.argv) > 1):
-        file = sys.argv[1]
-        try:
-            f = open(file,'r')
-            data = f.read()
-            f.close()
-            RiperParser.parse(data, debug = False, tracking=True)
-            print('This is a correct and complete Riper program');
-            quadrupleNumber = 0;
-            
-            for quadruple in quadruples:
-                print("%s \t %s" % (quadrupleNumber, quadruple))
-                quadrupleNumber += 1
-            print("OperandStack", operandStack)
-            print("OperatorStack", operatorStack)
-            print("globalDirectory", Settings.memoryMap)
-            Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
+RiperParser = yacc.yacc(debug=False, write_tables=False)
 
-        except EOFError:
-            print(EOFError)
+def Run(data):
+    RiperParser.parse(data, debug = False, tracking=True)
+    quadrupleNumber = 0;
+    if(len(sys.argv) > 2 and sys.argv[2] == 'quadruples'):
+        for quadruple in quadruples:
+            print("%s \t %s" % (quadrupleNumber, quadruple))
+            quadrupleNumber += 1
+    Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
+
+if __name__ == '__main__':
+    if(sys.argv[1][0] == '#'):
+        data = sys.argv[2][:-1]
     else:
-        print('File missing')
+        f = open(sys.argv[2],'r')
+        data = f.read()
+        f.close()
+    RiperParser.parse(data, debug = False, tracking=True)
+    
+    quadrupleNumber = 0;
+    if(sys.argv[2][-1] == 'quadruples'):
+        for quadruple in quadruples:
+            print("%s \t %s" % (quadrupleNumber, quadruple))
+            quadrupleNumber += 1
+    Execute(globalMemoryMap, globalTemporals, Settings.globalDirectory, quadruples, constantDirectory)
